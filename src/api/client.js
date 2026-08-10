@@ -10,14 +10,12 @@ if (import.meta.env.PROD && window.location.protocol !== 'https:') {
   )
 }
 
-// Axios instance — one place to set headers, base URL, timeouts
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 15000,
   withCredentials: true, // needed so the refresh-token cookie is sent automatically
 })
 
-// Request interceptor: attach JWT if the user is logged in
 client.interceptors.request.use((config) => {
   const token = getToken()
   if (token) {
@@ -26,8 +24,6 @@ client.interceptors.request.use((config) => {
   return config
 })
 
-// Response interceptor: unwrap the backend's ResponseWrapper<T>
-// Backend always sends { data, message, statusCode }
 client.interceptors.response.use(
   (res) => res,
   (err) => {

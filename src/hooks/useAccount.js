@@ -35,7 +35,6 @@ function persist(state) {
   }
 }
 
-// Module-level state seeded from sessionStorage so refreshes survive
 let _state = load()
 const _listeners = new Set()
 

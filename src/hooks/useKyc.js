@@ -2,8 +2,6 @@ import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { submitKycDocument } from '../api/kycApi'
 
-// Handles POST /api/kyc/submit
-// NIN submission → Tier 2 upgrade; BVN submission → Tier 3 upgrade
 export function useKyc() {
   const [loading, setLoading] = useState(false)
 
