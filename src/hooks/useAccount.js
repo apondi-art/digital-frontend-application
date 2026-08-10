@@ -2,12 +2,28 @@ import { useState, useEffect } from 'react'
 
 const STORAGE_KEY = 'db-account'
 
+const INITIAL = {
+  accountNumber: null,
+  accountId: null,
+  token: null,
+  role: null,
+  firstName: null,
+  lastName: null,
+  email: null,
+  phoneNumber: null,
+  gender: null,
+  dateOfBirth: null,
+  address: null,
+  nin: null,
+  bvn: null,
+}
+
 function load() {
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : { accountNumber: null, accountId: null }
+    return raw ? { ...INITIAL, ...JSON.parse(raw) } : { ...INITIAL }
   } catch {
-    return { accountNumber: null, accountId: null }
+    return { ...INITIAL }
   }
 }
 
@@ -30,9 +46,14 @@ export function setAccount(next) {
 }
 
 export function clearAccount() {
-  _state = { accountNumber: null, accountId: null }
+  _state = { ...INITIAL }
   sessionStorage.removeItem(STORAGE_KEY)
   _listeners.forEach((fn) => fn(_state))
+}
+
+// Used by the axios client interceptor (no React hook needed there)
+export function getToken() {
+  return _state.token
 }
 
 export function useAccount() {
