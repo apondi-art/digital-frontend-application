@@ -10,11 +10,13 @@ import PrivateRoute from './components/common/PrivateRoute'
 
 // Pages
 import LandingPage   from './pages/LandingPage'
+import LoginPage     from './pages/LoginPage'
 import RegisterPage  from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import TransferPage  from './pages/TransferPage'
 import DepositPage   from './pages/DepositPage'
 import RequeryPage   from './pages/RequeryPage'
+import KycPage       from './pages/KycPage'
 
 export default function App() {
   return (
@@ -27,16 +29,18 @@ export default function App() {
           {/* Public routes — wrapped in Navbar + Footer */}
           <Route element={<PublicLayout />}>
             <Route path={ROUTES.home}     element={<LandingPage />} />
+            <Route path={ROUTES.login}    element={<LoginPage />} />
             <Route path={ROUTES.register} element={<RegisterPage />} />
           </Route>
 
-          {/* Protected routes — redirect to / if no account in memory */}
+          {/* Protected routes — redirect to / if not authenticated */}
           <Route element={<PrivateRoute />}>
             <Route element={<AppLayout />}>
               <Route path={ROUTES.dashboard} element={<DashboardPage />} />
               <Route path={ROUTES.transfer}  element={<TransferPage />} />
               <Route path={ROUTES.deposit}   element={<DepositPage />} />
               <Route path={ROUTES.requery}   element={<RequeryPage />} />
+              <Route path={ROUTES.kyc}       element={<KycPage />} />
             </Route>
           </Route>
         </Routes>
