@@ -1,9 +1,12 @@
 // Client-side route paths — one source of truth for navigation
 export const ROUTES = {
-  home:     '/',
-  register: '/register',
+  home:      '/',
+  login:     '/login',
+  register:  '/register',
   dashboard: '/dashboard',
-  transfer: '/transfer',
-  deposit:  '/deposit',
-  requery:  '/requery',
+  transfer:  '/transfer',
+  deposit:   '/deposit',
+  requery:   '/requery',
+  kyc:       '/kyc',
+  profile:   '/profile',
 }
