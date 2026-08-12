@@ -1,5 +1,6 @@
 import axios from 'axios'
 import toast from 'react-hot-toast'
+import { getToken } from '../hooks/useAccount'
 
 // Warn loudly if card/account data would be sent over HTTP in production
 if (import.meta.env.PROD && window.location.protocol !== 'https:') {
@@ -9,14 +10,20 @@ if (import.meta.env.PROD && window.location.protocol !== 'https:') {
   )
 }
 
-// Axios instance — one place to set headers, base URL, timeouts
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 15000,
+  withCredentials: true, // needed so the refresh-token cookie is sent automatically
 })
 
-// Response interceptor: unwrap the backend's ResponseWrapper<T>
-// Backend always sends { data, message, statusCode }
+client.interceptors.request.use((config) => {
+  const token = getToken()
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 client.interceptors.response.use(
   (res) => res,
   (err) => {

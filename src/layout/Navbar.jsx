@@ -25,6 +25,12 @@ export default function Navbar() {
           </Link>
           <ThemeToggle />
           <Link
+            to={ROUTES.login}
+            className="text-gray-600 hover:text-gray-900 dark:text-emerald-300 dark:hover:text-white transition-colors px-3 py-2 font-medium"
+          >
+            Sign In
+          </Link>
+          <Link
             to={ROUTES.register}
             className="bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white px-4 py-2 font-medium transition-colors"
           >
