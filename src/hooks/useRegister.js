@@ -12,13 +12,7 @@ export function useRegister() {
 
   async function register(formData) {
     setLoading(true)
-    // Convert blank optional strings to null so the DB unique constraint
-    // on bvn/nin doesn't collide when users leave those fields empty
-    const payload = {
-      ...formData,
-      nin: formData.nin || null,
-      bvn: formData.bvn || null,
-    }
+    const payload = { ...formData }
     try {
       const res = await createPersonalAccount(payload)
       const accountNumber = res.data?.accountNumber
