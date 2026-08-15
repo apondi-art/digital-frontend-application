@@ -55,6 +55,11 @@ export function getToken() {
   return _state.token
 }
 
+// Used by transfer/deposit hooks to inject accountId without needing React context
+export function getAccountId() {
+  return _state.accountId
+}
+
 export function useAccount() {
   const [state, setState] = useState(_state)
 
