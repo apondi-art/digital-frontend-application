@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { transferFunds } from '../api/transactionApi'
+import { getAccountId } from './useAccount'
 
 // Handles POST /api/transaction/transfer
 // Returns { transfer, loading, result, error }
@@ -16,7 +17,7 @@ export function useTransfer() {
     setResult(null)
     setError(null)
     try {
-      const res = await transferFunds(payload)
+      const res = await transferFunds({ ...payload, accountId: getAccountId() })
       setResult(res.data)
       toast.success(res.message ?? 'Transfer successful')
       return true
