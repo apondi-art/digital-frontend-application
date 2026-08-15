@@ -3,7 +3,6 @@ import { useRequery } from '../hooks/useRequery'
 import Input from '../components/common/Input'
 import Button from '../components/common/Button'
 import Card from '../components/common/Card'
-import Badge from '../components/common/Badge'
 
 // Maps to PUT /api/transaction/requery/{transaction-id}
 // Resolves PENDING transactions to SUCCESSFUL or DECLINED (random on backend)
@@ -37,15 +36,27 @@ export default function RequeryPage() {
 
       {result && (
         <Card className="mt-4">
-          <p className="text-sm text-gray-500 dark:text-emerald-400 mb-2">Requery Result</p>
-          <div className="flex items-center gap-3">
-            <Badge status={result.status} />
-            <span className="text-gray-700 dark:text-emerald-200 text-sm">
-              {result.status === 'SUCCESSFUL'
-                ? 'Funds have been credited to your account.'
-                : 'Transaction was declined. No funds were credited.'}
-            </span>
-          </div>
+          {result.status === 'SUCCESSFUL' ? (
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-300 text-lg shrink-0">✓</div>
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">Deposit settled successfully</p>
+                <p className="text-gray-500 dark:text-emerald-300 text-sm mt-0.5">
+                  The funds have been credited to your account. You can confirm the updated balance on your Dashboard.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-500 text-lg shrink-0">✕</div>
+              <div>
+                <p className="font-semibold text-red-600 dark:text-red-400 text-sm">Deposit declined</p>
+                <p className="text-gray-500 dark:text-emerald-300 text-sm mt-0.5">
+                  This transaction could not be completed. No funds were added to your account. If your card was charged, please contact your bank or reach out to support.
+                </p>
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>
