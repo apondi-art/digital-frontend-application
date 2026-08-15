@@ -4,11 +4,14 @@ import { submitKycDocument } from '../api/kycApi'
 
 export function useKyc() {
   const [loading, setLoading] = useState(false)
+  const [result, setResult] = useState(null)
 
   async function submitKyc(formData) {
     setLoading(true)
+    setResult(null)
     try {
       const res = await submitKycDocument(formData)
+      setResult({ documentType: formData.documentType })
       toast.success(res.message ?? 'KYC document submitted successfully!')
       return true
     } catch {
@@ -19,5 +22,5 @@ export function useKyc() {
     }
   }
 
-  return { submitKyc, loading }
+  return { submitKyc, loading, result }
 }

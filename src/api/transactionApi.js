@@ -12,3 +12,7 @@ export const depositFunds = (payload) =>
 // PUT /api/transaction/requery/{id}
 export const requeryTransaction = (txId) =>
   client.put(ENDPOINTS.requery(txId)).then((r) => r.data)
+
+// GET /api/transaction/transaction-history
+export const getTransactionHistory = () =>
+  client.get(ENDPOINTS.transactionHistory).then((r) => r.data)

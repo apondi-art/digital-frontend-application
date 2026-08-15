@@ -1,9 +1,9 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useDeposit } from '../hooks/useDeposit'
 import Input from '../components/common/Input'
 import Button from '../components/common/Button'
 import Card from '../components/common/Card'
-import Badge from '../components/common/Badge'
 
 // Maps to POST /api/transaction/deposit (CardDetailsRequest)
 // Two test cards are available in the backend:
@@ -12,10 +12,11 @@ import Badge from '../components/common/Badge'
 export default function DepositPage() {
   const { deposit, loading, result } = useDeposit()
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
+  const [submitted, setSubmitted] = useState(null)
 
   async function onSubmit(data) {
+    setSubmitted(data)
     const ok = await deposit({
-      accountId: data.accountId,
       cardNumber: data.cardNumber,
       cardName: data.cardName,
       dateOfExpiry: data.dateOfExpiry,
@@ -23,7 +24,7 @@ export default function DepositPage() {
       depositAmount: parseFloat(data.depositAmount),
       description: data.description,
     })
-    if (ok) reset()
+    if (ok && result?.status !== 'PENDING') reset()
   }
 
   return (
@@ -40,15 +41,6 @@ export default function DepositPage() {
 
       <Card>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-          <Input
-            label="Your Account ID (UUID)"
-            name="accountId"
-            placeholder="3fa85f64-5717-4562-b3fc-2c963f66afa6"
-            required
-            error={errors.accountId?.message}
-            {...register('accountId', { required: 'Account ID is required' })}
-          />
-
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
               <Input
@@ -130,17 +122,30 @@ export default function DepositPage() {
         </form>
       </Card>
 
-      {result && (
+      {result && submitted && (
         <Card className="mt-4">
-          <p className="text-sm text-gray-500 dark:text-emerald-400 mb-2">Deposit Result</p>
-          <div className="flex items-center gap-3">
-            <Badge status={result.status} />
-            {result.status === 'PENDING' && (
-              <span className="text-gray-600 dark:text-emerald-200 text-sm">
-                Use <strong>Re-query</strong> in the sidebar to check the final status.
-              </span>
-            )}
-          </div>
+          {result.status === 'SUCCESSFUL' ? (
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-300 text-lg shrink-0">✓</div>
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white text-sm">Deposit successful</p>
+                <p className="text-gray-500 dark:text-emerald-300 text-sm mt-0.5">
+                  ₦{Number(submitted.depositAmount).toLocaleString()} has been added to your account.
+                </p>
+                <p className="text-gray-400 dark:text-emerald-500 text-xs mt-1">"{submitted.description}"</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400 text-lg shrink-0">⏳</div>
+              <div>
+                <p className="font-semibold text-amber-700 dark:text-amber-400 text-sm">Deposit is being processed</p>
+                <p className="text-gray-500 dark:text-emerald-300 text-sm mt-0.5">
+                  Your deposit of <strong>₦{Number(submitted.depositAmount).toLocaleString()}</strong> is pending. Go to <strong>History</strong> to find your Transaction ID, then use <strong>Re-query</strong> to settle it.
+                </p>
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>

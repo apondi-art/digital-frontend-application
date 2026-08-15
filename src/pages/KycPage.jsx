@@ -5,11 +5,16 @@ import Input from '../components/common/Input'
 import Button from '../components/common/Button'
 import Card from '../components/common/Card'
 
+const KYC_TIERS = {
+  NIN: { tier: 'Tier 2', limit: '₦200,000' },
+  BVN: { tier: 'Tier 3', limit: '₦1,000,000' },
+}
+
 // Maps to POST /api/kyc/submit
 // NIN → upgrades account from Tier 1 to Tier 2
 // BVN → upgrades account from Tier 2 to Tier 3
 export default function KycPage() {
-  const { submitKyc, loading } = useKyc()
+  const { submitKyc, loading, result } = useKyc()
 
   const {
     register,
@@ -74,6 +79,22 @@ export default function KycPage() {
           </Button>
         </form>
       </Card>
+
+      {result && (
+        <Card className="mt-4">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-300 text-lg shrink-0">✓</div>
+            <div>
+              <p className="font-semibold text-gray-900 dark:text-white text-sm">Verification approved</p>
+              <p className="text-gray-500 dark:text-emerald-300 text-sm mt-0.5">
+                Your {result.documentType} has been verified. Your account has been upgraded to{' '}
+                <strong>{KYC_TIERS[result.documentType]?.tier}</strong> with a daily transfer limit of{' '}
+                <strong>{KYC_TIERS[result.documentType]?.limit}</strong>.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   )
 }
