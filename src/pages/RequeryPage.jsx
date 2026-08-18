@@ -1,4 +1,6 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { useLocation } from 'react-router-dom'
 import { useRequery } from '../hooks/useRequery'
 import Input from '../components/common/Input'
 import Button from '../components/common/Button'
@@ -8,7 +10,15 @@ import Card from '../components/common/Card'
 // Resolves PENDING transactions to SUCCESSFUL or DECLINED (random on backend)
 export default function RequeryPage() {
   const { requery, loading, result } = useRequery()
-  const { register, handleSubmit, formState: { errors } } = useForm()
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm()
+  const location = useLocation()
+
+  // Pre-fill transaction ID if navigated here from TransactionHistoryPage
+  useEffect(() => {
+    if (location.state?.transactionId) {
+      setValue('transactionId', location.state.transactionId)
+    }
+  }, [location.state, setValue])
 
   return (
     <div className="max-w-lg">

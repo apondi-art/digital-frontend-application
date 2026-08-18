@@ -37,7 +37,15 @@ export function useLogin() {
       }
 
       toast.success(authRes.message ?? 'Login successful!')
-      navigate(ROUTES.dashboard)
+      // Route based on role
+      const role = authRes.data?.role
+      if (role === 'ADMIN') {
+        navigate(ROUTES.adminDashboard)
+      } else if (role === 'BUSINESS') {
+        navigate(ROUTES.businessDashboard)
+      } else {
+        navigate(ROUTES.dashboard)
+      }
       return true
     } catch {
       // Axios interceptor already showed the error toast

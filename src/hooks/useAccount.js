@@ -16,6 +16,7 @@ const INITIAL = {
   address: null,
   nin: null,
   bvn: null,
+  accountTier: null,
 }
 
 function load() {

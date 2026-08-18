@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { useKyc } from '../hooks/useKyc'
+import { useAccount } from '../hooks/useAccount'
 import Select from '../components/common/Select'
 import Input from '../components/common/Input'
 import Button from '../components/common/Button'
@@ -10,11 +11,18 @@ const KYC_TIERS = {
   BVN: { tier: 'Tier 3', limit: '₦1,000,000' },
 }
 
+const TIER_LABEL_MAP = {
+  TIER_1: { label: 'Tier 1', colour: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' },
+  TIER_2: { label: 'Tier 2', colour: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300' },
+  TIER_3: { label: 'Tier 3', colour: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300' },
+}
+
 // Maps to POST /api/kyc/submit
 // NIN → upgrades account from Tier 1 to Tier 2
 // BVN → upgrades account from Tier 2 to Tier 3
 export default function KycPage() {
   const { submitKyc, loading, result } = useKyc()
+  const { accountTier } = useAccount()
 
   const {
     register,
@@ -24,10 +32,21 @@ export default function KycPage() {
   } = useForm()
 
   const docType = watch('documentType')
+  const tierInfo = TIER_LABEL_MAP[accountTier ?? 'TIER_1']
 
   return (
     <div className="max-w-lg">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">KYC Verification</h2>
+      {/* Current tier display */}
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-sm text-gray-500 dark:text-emerald-300">Current tier:</span>
+        <span className={`px-3 py-1 text-xs font-bold rounded ${tierInfo?.colour ?? 'bg-gray-100 text-gray-700'}`}>
+          {tierInfo?.label ?? accountTier ?? 'TIER_1'}
+        </span>
+        {accountTier === 'TIER_3' && (
+          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Maximum tier reached</span>
+        )}
+      </div>
       <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm">
         Submit your NIN to upgrade to Tier 2, or your BVN to reach Tier 3 and unlock higher transfer limits.
       </p>

@@ -1,0 +1,57 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, feat/**, fix/**, hotfix/** ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    name: Lint, Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://api.placeholder.com
+
+      - name: Test
+        run: npm run test:run
+        if: hashFiles('src/**/*.test.*') != ''
+
+  docker-build:
+    name: Docker Build (on main only)
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'https://api.placeholder.com' }}
+        run: |
+          docker build \
+            --build-arg VITE_API_BASE_URL=$VITE_API_BASE_URL \
+            -t digital-frontend:${{ github.sha }} \
+            -t digital-frontend:latest \
+            .

@@ -1,0 +1,181 @@
+import { useState, useEffect, useCallback } from 'react'
+import toast from 'react-hot-toast'
+import { getPendingKyc, approveKyc, rejectKyc } from '../../api/adminApi'
+import { formatDate } from '../../utils/format'
+import Card from '../../components/common/Card'
+import Button from '../../components/common/Button'
+
+function RejectDialog({ kycId, onConfirm, onCancel, loading }) {
+  const [reason, setReason] = useState('')
+  return (
+    <div className="mt-3 p-4 border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20">
+      <p className="text-sm font-semibold text-red-600 dark:text-red-400 mb-2">Rejection reason (required)</p>
+      <textarea
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        rows={2}
+        placeholder="Explain why this submission is being rejected…"
+        className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-emerald-700 bg-white dark:bg-emerald-900 text-gray-900 dark:text-white resize-none focus:outline-none focus:border-red-400"
+      />
+      <div className="flex gap-2 mt-2">
+        <button
+          onClick={() => onConfirm(kycId, reason)}
+          disabled={loading || !reason.trim()}
+          className="px-3 py-1.5 bg-red-600 text-white text-xs font-semibold hover:bg-red-700 disabled:opacity-50 transition-colors"
+        >
+          {loading ? 'Rejecting…' : 'Confirm Reject'}
+        </button>
+        <button onClick={onCancel} className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 dark:text-emerald-400 dark:hover:text-white">
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default function AdminKycQueuePage() {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [actionId, setActionId] = useState(null)
+  const [rejectingId, setRejectingId] = useState(null)
+  const [actionLoading, setActionLoading] = useState(false)
+
+  const load = useCallback((p) => {
+    setLoading(true)
+    getPendingKyc(p, 20)
+      .then((res) => {
+        const d = res.data ?? res
+        setItems(d.content ?? d ?? [])
+        setTotalPages(d.totalPages ?? 1)
+      })
+      .catch(() => toast.error('Failed to load KYC queue'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => { load(page) }, [load, page])
+
+  async function handleApprove(id) {
+    setActionLoading(true)
+    setActionId(id)
+    try {
+      await approveKyc(id)
+      toast.success('KYC approved — account tier upgraded')
+      setItems((prev) => prev.filter((i) => i.id !== id))
+    } catch {
+      // Axios shows error
+    } finally {
+      setActionLoading(false)
+      setActionId(null)
+    }
+  }
+
+  async function handleReject(id, reason) {
+    if (!reason.trim()) { toast.error('Reason is required'); return }
+    setActionLoading(true)
+    setActionId(id)
+    try {
+      await rejectKyc(id, reason)
+      toast.success('KYC rejected — customer notified')
+      setItems((prev) => prev.filter((i) => i.id !== id))
+      setRejectingId(null)
+    } catch {
+      // Axios shows error
+    } finally {
+      setActionLoading(false)
+      setActionId(null)
+    }
+  }
+
+  return (
+    <div className="max-w-4xl space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">KYC Review Queue</h2>
+        <p className="text-gray-500 dark:text-emerald-300 text-sm mt-1">
+          Pending KYC submissions awaiting manual review.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-20 bg-gray-100 dark:bg-emerald-900 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <Card>
+          <p className="text-center text-gray-400 dark:text-emerald-500 py-8 text-sm">
+            No pending KYC submissions.
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {items.map((item) => (
+            <Card key={item.id}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded">
+                      {item.documentType}
+                    </span>
+                    <span className="text-xs text-gray-400 dark:text-emerald-500">{formatDate(item.submittedAt)}</span>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {item.customerName ?? `Customer #${item.customerId}`}
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-emerald-500 font-mono mt-0.5">
+                    {item.submittedValue ? '•'.repeat(item.submittedValue.length) : '—'}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => handleApprove(item.id)}
+                    disabled={actionLoading && actionId === item.id}
+                    className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+                  >
+                    {actionLoading && actionId === item.id ? '…' : 'Approve'}
+                  </button>
+                  <button
+                    onClick={() => setRejectingId(rejectingId === item.id ? null : item.id)}
+                    className="px-3 py-1.5 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+              {rejectingId === item.id && (
+                <RejectDialog
+                  kycId={item.id}
+                  onConfirm={handleReject}
+                  onCancel={() => setRejectingId(null)}
+                  loading={actionLoading && actionId === item.id}
+                />
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-sm">
+          <button
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            className="px-4 py-2 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
+          >
+            ← Previous
+          </button>
+          <span className="text-gray-500 dark:text-emerald-400">Page {page + 1} of {totalPages}</span>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            disabled={page >= totalPages - 1}
+            className="px-4 py-2 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
+          >
+            Next →
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}

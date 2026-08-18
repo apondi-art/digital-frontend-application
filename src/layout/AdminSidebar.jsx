@@ -3,21 +3,22 @@ import { ROUTES } from '../constants/routes'
 import { useLogout } from '../hooks/useLogout'
 
 const links = [
-  { to: ROUTES.dashboard, label: 'Dashboard',   icon: '▦' },
-  { to: ROUTES.profile,   label: 'Profile',     icon: '👤' },
-  { to: ROUTES.history,   label: 'History',     icon: '☰' },
-  { to: ROUTES.transfer,  label: 'Transfer',    icon: '⇄' },
-  { to: ROUTES.deposit,   label: 'Deposit',     icon: '↓' },
-  { to: ROUTES.requery,   label: 'Re-query',    icon: '↻' },
-  { to: ROUTES.kyc,       label: 'Upgrade Tier', icon: '↑' },
+  { to: ROUTES.adminDashboard,    label: 'Overview',       icon: '▦' },
+  { to: ROUTES.adminCustomers,    label: 'Customers',      icon: '👥' },
+  { to: ROUTES.adminKycQueue,     label: 'KYC Queue',      icon: '🪪' },
+  { to: ROUTES.adminTransactions, label: 'Transactions',   icon: '⇄' },
+  { to: ROUTES.adminAuditLogs,    label: 'Audit Logs',     icon: '📋' },
 ]
 
-export default function Sidebar() {
+export default function AdminSidebar() {
   const { logout } = useLogout()
 
   return (
     <aside className="w-56 bg-white border-r border-gray-100 dark:bg-emerald-950 dark:border-emerald-800 flex flex-col py-6 px-3 min-h-full">
-      <nav aria-label="Main navigation" className="flex flex-col gap-1 flex-1">
+      <div className="px-4 pb-4 mb-2 border-b border-gray-100 dark:border-emerald-800">
+        <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest">Admin Panel</span>
+      </div>
+      <nav aria-label="Admin navigation" className="flex flex-col gap-1 flex-1">
         {links.map(({ to, label, icon }) => (
           <NavLink
             key={to}
@@ -36,7 +37,6 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Logout — calls POST /api/auth/logout before clearing local session */}
       <button
         onClick={logout}
         className="mt-4 flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-emerald-900 transition-colors w-full"
