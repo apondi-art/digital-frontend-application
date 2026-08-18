@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { createPersonalAccount } from '../api/accountApi'
-import { setAccount } from './useAccount'
 import { ROUTES } from '../constants/routes'
 
-// Handles POST /api/create-personal-account
+// Handles POST /api/account/create-personal-account
+// After success, redirects to /login (not /dashboard) because no JWT is issued at registration.
 export function useRegister() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -17,12 +17,14 @@ export function useRegister() {
       const res = await createPersonalAccount(payload)
       const accountNumber = res.data?.accountNumber
       if (!accountNumber) throw new Error('No account number returned by server')
-      setAccount({ accountNumber })
-      toast.success(res.message ?? 'Account created!')
-      navigate(ROUTES.dashboard)
+      // Navigate to login with a success message — no JWT exists yet so we cannot access protected routes
+      navigate(ROUTES.login, {
+        state: { registrationSuccess: true, accountNumber },
+        replace: true,
+      })
       return true
     } catch {
-      // Axios interceptor already showed the toast; just signal failure
+      // Axios interceptor already showed the error toast; just signal failure
       return false
     } finally {
       setLoading(false)
