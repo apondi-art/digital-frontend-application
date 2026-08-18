@@ -1,5 +1,7 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { useLogin } from '../hooks/useLogin'
 import { ROUTES } from '../constants/routes'
 import Input from '../components/common/Input'
@@ -93,6 +95,20 @@ function HeroPanel() {
 export default function LoginPage() {
   const { login, loading } = useLogin()
   const { register, handleSubmit, formState: { errors } } = useForm()
+  const location = useLocation()
+
+  // Show success toast when redirected here after registration
+  useEffect(() => {
+    if (location.state?.registrationSuccess) {
+      toast.success('Account created! Please sign in to continue.')
+      // Clear the state so the toast doesn't show again on refresh
+      window.history.replaceState({}, document.title)
+    }
+    if (location.state?.passwordResetSuccess) {
+      toast.success('Password reset successful. Please sign in.')
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -144,6 +160,15 @@ export default function LoginPage() {
               Sign In
             </Button>
           </form>
+
+          <div className="flex justify-end mt-2">
+            <Link
+              to={ROUTES.forgotPassword}
+              className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
 
           <p className="text-center text-sm text-gray-500 dark:text-emerald-300 mt-6">
             No account?{' '}
