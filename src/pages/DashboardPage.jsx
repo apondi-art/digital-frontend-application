@@ -1,8 +1,26 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useAccount } from '../hooks/useAccount'
+import { useAccount, setAccount } from '../hooks/useAccount'
+import { useBalance } from '../hooks/useBalance'
+import { getUserProfile } from '../api/accountApi'
+import { formatNaira } from '../utils/format'
 import { ROUTES } from '../constants/routes'
 
-function BankCard({ accountNumber, firstName, lastName }) {
+function TierBadge({ tier }) {
+  const map = {
+    TIER_1: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+    TIER_2: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+    TIER_3: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+  }
+  if (!tier) return null
+  return (
+    <span className={`inline-block px-3 py-1 text-xs font-bold rounded ${map[tier] ?? 'bg-gray-100 text-gray-700'}`}>
+      {tier}
+    </span>
+  )
+}
+
+function BankCard({ accountNumber, firstName, lastName, balance, balanceLoading }) {
   const name = [firstName, lastName].filter(Boolean).join(' ').toUpperCase() || 'YOUR NAME'
   const maskedNumber = accountNumber
     ? accountNumber.replace(/(\d{4})(\d{3})(\d{3})/, '$1 $2 $3')
@@ -21,18 +39,16 @@ function BankCard({ accountNumber, firstName, lastName }) {
           </svg>
         </div>
 
-        {/* Chip + contactless */}
-        <div className="flex items-center gap-3 mt-2">
-          <svg viewBox="0 0 36 28" className="w-9" aria-hidden="true">
-            <rect x="1" y="1" width="34" height="26" rx="4" fill="#d97706" opacity="0.8" />
-            <line x1="1" y1="14" x2="35" y2="14" stroke="#92400e" strokeWidth="1.5" />
-            <line x1="18" y1="1" x2="18" y2="27" stroke="#92400e" strokeWidth="1.5" />
-          </svg>
-          <svg viewBox="0 0 24 24" className="w-5" aria-hidden="true">
-            <path d="M12 2 Q18 8 12 14" stroke="#6ee7b7" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-            <path d="M12 6 Q20 12 12 18" stroke="#6ee7b7" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-            <path d="M12 10 Q22 16 12 22" stroke="#6ee7b7" strokeWidth="1" fill="none" strokeLinecap="round" />
-          </svg>
+        {/* Balance */}
+        <div className="mt-2">
+          <p className="text-emerald-400 text-xs uppercase tracking-widest mb-1">Available Balance</p>
+          {balanceLoading ? (
+            <div className="h-6 w-32 bg-emerald-700 animate-pulse rounded" />
+          ) : (
+            <p className="text-white font-bold text-xl">
+              {balance != null ? formatNaira(balance) : '—'}
+            </p>
+          )}
         </div>
 
         {/* Account number */}
@@ -49,7 +65,7 @@ function BankCard({ accountNumber, firstName, lastName }) {
           </div>
           <div className="text-right">
             <p className="text-emerald-400 text-xs uppercase tracking-widest mb-0.5">Type</p>
-            <p className="text-emerald-300 text-xs font-semibold">Savings · Tier 1</p>
+            <p className="text-emerald-300 text-xs font-semibold">Savings</p>
           </div>
         </div>
       </div>
@@ -117,8 +133,35 @@ const actions = [
 ]
 
 export default function DashboardPage() {
-  const { accountNumber, firstName, lastName } = useAccount()
+  const { accountNumber, firstName, lastName, accountTier } = useAccount()
   const displayName = firstName ? `${firstName}${lastName ? ' ' + lastName : ''}` : null
+  const { balance, loading: balanceLoading } = useBalance()
+
+  // Re-fetch profile on mount to keep session data fresh (e.g. after tier upgrade)
+  useEffect(() => {
+    getUserProfile()
+      .then((res) => {
+        const data = res.data
+        if (data) {
+          setAccount({
+            accountId:   data.id,
+            firstName:   data.firstName,
+            lastName:    data.lastName,
+            email:       data.email,
+            phoneNumber: data.phoneNumber,
+            gender:      data.gender,
+            dateOfBirth: data.dateOfBirth,
+            address:     data.address,
+            nin:         data.nin,
+            bvn:         data.bvn,
+            accountTier: data.accountTier,
+          })
+        }
+      })
+      .catch(() => {
+        // Session data already loaded — non-critical failure, no toast needed
+      })
+  }, [])
 
   return (
     <div className="max-w-3xl space-y-8">
@@ -130,8 +173,20 @@ export default function DashboardPage() {
         <p className="text-gray-500 dark:text-emerald-300 text-sm mt-1">Here&apos;s your account at a glance.</p>
       </div>
 
-      {/* Bank card */}
-      <BankCard accountNumber={accountNumber} firstName={firstName} lastName={lastName} />
+      {/* Bank card + tier badge */}
+      <div className="flex flex-col gap-3">
+        <BankCard
+          accountNumber={accountNumber}
+          firstName={firstName}
+          lastName={lastName}
+          balance={balance}
+          balanceLoading={balanceLoading}
+        />
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-400 dark:text-emerald-500 uppercase tracking-widest">Account Tier</span>
+          <TierBadge tier={accountTier ?? 'TIER_1'} />
+        </div>
+      </div>
 
       {/* Quick actions */}
       <div>
