@@ -9,3 +9,15 @@ export const logoutUser = () =>
 
 export const refreshAccessToken = () =>
   client.post(ENDPOINTS.refreshToken).then((r) => r.data)
+
+export const forgotPassword = (email) =>
+  client.post(ENDPOINTS.forgotPassword, { email }).then((r) => r.data)
+
+export const resetPassword = (token, newPassword) =>
+  client.post(ENDPOINTS.resetPassword, { token, newPassword }).then((r) => r.data)
+
+export const verifyOtp = (otp, email) =>
+  client.post(ENDPOINTS.verifyOtp, { otp, email }).then((r) => r.data)
+
+export const resendOtp = (email) =>
+  client.post(ENDPOINTS.resendOtp, { email }).then((r) => r.data)
