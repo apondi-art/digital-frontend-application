@@ -16,17 +16,11 @@ export default function Footer({ deep = false }) {
             <span className="text-gray-900 dark:text-white font-semibold text-sm">DigitalBank</span>
           </div>
 
-          {/* Links */}
+          {/* Links — placeholder hrefs until dedicated pages are built */}
           <div className="flex items-center gap-5 text-sm">
-            {['Privacy', 'Terms', 'Support'].map(l => (
-              <button
-                key={l}
-                type="button"
-                className="text-gray-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-white transition-colors"
-              >
-                {l}
-              </button>
-            ))}
+            <a href="/privacy" className="text-gray-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-white transition-colors">Privacy</a>
+            <a href="/terms" className="text-gray-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-white transition-colors">Terms</a>
+            <a href="mailto:support@digitalbank.com" className="text-gray-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-white transition-colors">Support</a>
           </div>
 
           {/* Copyright */}
