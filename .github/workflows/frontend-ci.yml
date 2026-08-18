@@ -33,8 +33,7 @@ jobs:
           VITE_API_BASE_URL: https://api.placeholder.com
 
       - name: Test
-        run: npm test -- --run
-        # Remove the 'if' condition once tests are written
+        run: npm run test:run
         if: hashFiles('src/**/*.test.*') != ''
 
   docker-build:
