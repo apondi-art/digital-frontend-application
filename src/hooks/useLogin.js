@@ -38,16 +38,18 @@ export function useLogin() {
 
       if (profile) {
         setAccount({
-          accountId:   profile.id,
-          firstName:   profile.firstName,
-          lastName:    profile.lastName,
-          email:       profile.email,
-          phoneNumber: profile.phoneNumber,
-          gender:      profile.gender,
-          dateOfBirth: profile.dateOfBirth,
-          address:     profile.address,
-          nin:         profile.nin,
-          bvn:         profile.bvn,
+          accountId:     profile.id,
+          firstName:     profile.firstName,
+          lastName:      profile.lastName,
+          email:         profile.email,
+          phoneNumber:   profile.phoneNumber,
+          gender:        profile.gender,
+          dateOfBirth:   profile.dateOfBirth,
+          address:       profile.address,
+          nin:           profile.nin,
+          bvn:           profile.bvn,
+          accountNumber: profile.accountDto?.accountNumber ?? null,
+          accountTier:   profile.accountDto?.accountTier   ?? null,
         })
       }
 
