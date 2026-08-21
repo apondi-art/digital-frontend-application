@@ -177,11 +177,21 @@ export default function LoginPage() {
             </Link>
           </p>
 
-          <p className="text-center text-xs text-gray-400 dark:text-emerald-600 mt-3">
-            <Link to={ROUTES.adminLogin} className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-              Admin sign in →
+          {/* Admin quick access */}
+          <div className="mt-5 pt-4 border-t border-gray-100 dark:border-emerald-800 flex gap-3 justify-center">
+            <Link
+              to={ROUTES.adminLogin}
+              className="flex-1 text-center text-xs px-3 py-2 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 transition-colors font-medium"
+            >
+              Admin Sign In
             </Link>
-          </p>
+            <Link
+              to={ROUTES.adminRegister}
+              className="flex-1 text-center text-xs px-3 py-2 border border-gray-200 dark:border-emerald-800 text-gray-500 dark:text-emerald-500 hover:bg-gray-50 dark:hover:bg-emerald-900/50 transition-colors"
+            >
+              Register as Admin
+            </Link>
+          </div>
         </div>
       </div>
     </div>
