@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createAdminAccount } from '../api/accountApi'
+import { createAdmin } from '../api/adminApi'
 import { ROUTES } from '../constants/routes'
 
 export function useAdminRegister() {
@@ -10,7 +10,7 @@ export function useAdminRegister() {
   async function registerAdmin(formData) {
     setLoading(true)
     try {
-      await createAdminAccount(formData)
+      await createAdmin(formData)
       navigate(ROUTES.login, {
         state: { registrationSuccess: true },
         replace: true,
