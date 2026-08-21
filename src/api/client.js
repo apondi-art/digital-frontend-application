@@ -82,7 +82,12 @@ client.interceptors.response.use(
     }
 
     // All other errors — show a descriptive toast
-    const serverMsg = err.response?.data?.message
+    // Backend validation errors return a field map {field: "msg"} instead of {message: "..."}
+    const data = err.response?.data
+    const serverMsg = data?.message
+      ?? (data && typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length
+          ? Object.entries(data).map(([f, m]) => `${f}: ${m}`).join(', ')
+          : null)
     let msg = serverMsg
 
     if (!msg) {
