@@ -84,6 +84,7 @@ export default function VerifyOtpPage() {
   const [resendLoading, setResendLoading] = useState(false)
   const [countdown, setCountdown] = useState(RESEND_COOLDOWN)
   const [expiresIn, setExpiresIn] = useState(OTP_EXPIRY_SECONDS)
+  const [verified, setVerified] = useState(false)
   const inputRefs = useRef([])
 
   const location = useLocation()
@@ -142,8 +143,7 @@ export default function VerifyOtpPage() {
     setLoading(true)
     try {
       await verifyOtp(customerId, code)
-      toast.success('Account verified! You can now log in.')
-      setTimeout(() => navigate(ROUTES.login, { replace: true }), 2000)
+      setVerified(true)
     } catch {
       // Axios interceptor shows error toast
     } finally {
@@ -172,6 +172,35 @@ export default function VerifyOtpPage() {
     } finally {
       setResendLoading(false)
     }
+  }
+
+  if (verified) {
+    return (
+      <div className="min-h-screen grid lg:grid-cols-2">
+        <HeroPanel />
+        <div className="flex items-center justify-center px-6 py-16 bg-white dark:bg-emerald-950">
+          <div className="w-full max-w-sm text-center flex flex-col items-center gap-6">
+            <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
+              <svg className="w-10 h-10 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">Account Verified!</h1>
+              <p className="text-gray-500 dark:text-emerald-300 text-sm mt-2">
+                Your account is now active. Sign in to start banking.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate(ROUTES.login, { replace: true })}
+              className="w-full py-3 bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 transition-colors"
+            >
+              Sign In to Your Account
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
