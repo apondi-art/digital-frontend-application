@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getAccountBalance } from '../api/accountApi'
+import { getUserProfile } from '../api/accountApi'
 
-// Fetches account balance on mount and whenever refetch() is called.
+// Balance is not a standalone endpoint — extract from user profile's accountDto.
 // Returns { balance, loading, error, refetch }
 export function useBalance() {
   const [balance, setBalance] = useState(null)
@@ -12,8 +12,9 @@ export function useBalance() {
     setLoading(true)
     setError(null)
     try {
-      const res = await getAccountBalance()
-      setBalance(res.data?.balance ?? res.data ?? null)
+      const res = await getUserProfile()
+      const profile = res.data ?? res
+      setBalance(profile.accountDto?.balance ?? null)
     } catch {
       setError('Unable to load balance')
     } finally {
