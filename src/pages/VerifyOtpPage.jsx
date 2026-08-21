@@ -7,6 +7,7 @@ import Button from '../components/common/Button'
 import ThemeToggle from '../components/common/ThemeToggle'
 
 const RESEND_COOLDOWN = 60
+const OTP_EXPIRY_SECONDS = 10 * 60 // 10 minutes
 
 function HeroPanel() {
   return (
@@ -82,10 +83,12 @@ export default function VerifyOtpPage() {
   const [loading, setLoading] = useState(false)
   const [resendLoading, setResendLoading] = useState(false)
   const [countdown, setCountdown] = useState(RESEND_COOLDOWN)
+  const [expiresIn, setExpiresIn] = useState(OTP_EXPIRY_SECONDS)
   const inputRefs = useRef([])
 
   const location = useLocation()
   const navigate = useNavigate()
+  const customerId = location.state?.customerId ?? null
   const email = location.state?.email ?? null
 
   useEffect(() => {
@@ -93,6 +96,20 @@ export default function VerifyOtpPage() {
     const id = setTimeout(() => setCountdown((c) => c - 1), 1000)
     return () => clearTimeout(id)
   }, [countdown])
+
+  useEffect(() => {
+    if (expiresIn <= 0) return
+    const id = setTimeout(() => setExpiresIn((t) => t - 1), 1000)
+    return () => clearTimeout(id)
+  }, [expiresIn])
+
+  const otpExpired = expiresIn <= 0
+
+  function formatExpiry(secs) {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0')
+    const s = (secs % 60).toString().padStart(2, '0')
+    return `${m}:${s}`
+  }
 
   function handleChange(index, value) {
     if (!/^\d?$/.test(value)) return
@@ -112,6 +129,11 @@ export default function VerifyOtpPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (!customerId) {
+      toast.error('Session expired. Please register again.')
+      navigate(ROUTES.register, { replace: true })
+      return
+    }
     const code = otp.join('')
     if (code.length !== 6) {
       toast.error('Please enter all 6 digits')
@@ -119,9 +141,9 @@ export default function VerifyOtpPage() {
     }
     setLoading(true)
     try {
-      await verifyOtp(code, email)
-      toast.success('Phone number verified! You can now log in.')
-      navigate(ROUTES.login, { replace: true })
+      await verifyOtp(customerId, code)
+      toast.success('Account verified! You can now log in.')
+      setTimeout(() => navigate(ROUTES.login, { replace: true }), 2000)
     } catch {
       // Axios interceptor shows error toast
     } finally {
@@ -130,15 +152,19 @@ export default function VerifyOtpPage() {
   }
 
   async function handleResend() {
-    if (!email) {
-      toast.error('Email address not found. Please register again.')
+    if (!customerId) {
+      // Already registered but no session — sending them to login triggers the
+      // 403 "not verified" redirect which brings them back here with customerId
+      toast('Try logging in — we\'ll bring you right back here.', { icon: 'ℹ️' })
+      navigate(ROUTES.login, { replace: true })
       return
     }
     setResendLoading(true)
     try {
-      await resendOtp(email)
+      await resendOtp(customerId)
       toast.success('A new OTP has been sent.')
       setCountdown(RESEND_COOLDOWN)
+      setExpiresIn(OTP_EXPIRY_SECONDS)
       setOtp(['', '', '', '', '', ''])
       inputRefs.current[0]?.focus()
     } catch {
@@ -168,56 +194,89 @@ export default function VerifyOtpPage() {
             <span className="text-gray-900 dark:text-white font-bold text-lg">DigitalBank</span>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Enter your code</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Verify your account</h1>
           <p className="text-gray-500 dark:text-emerald-300 text-sm mb-2">
             We sent a 6-digit code to your registered phone number.
           </p>
-          {email && (
-            <p className="text-sm font-medium text-emerald-600 dark:text-emerald-300 mb-8">{email}</p>
+          {!otpExpired && (
+            <p className="text-xs text-gray-400 dark:text-emerald-500 mb-1">
+              Code expires in{' '}
+              <span className={`font-semibold ${expiresIn <= 60 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-300'}`}>
+                {formatExpiry(expiresIn)}
+              </span>
+            </p>
           )}
-          {!email && <div className="mb-8" />}
+          {otpExpired && (
+            <p className="text-xs font-semibold text-red-500 mb-1">
+              Your code has expired. Request a new one below.
+            </p>
+          )}
+          {email ? (
+            <p className="text-sm font-medium text-emerald-600 dark:text-emerald-300 mb-8">{email}</p>
+          ) : (
+            <div className="mb-8" />
+          )}
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            {/* OTP digit inputs */}
-            <div className="flex gap-3">
-              {otp.map((digit, i) => (
-                <input
-                  key={i}
-                  ref={(el) => { inputRefs.current[i] = el }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleChange(i, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(i, e)}
-                  aria-label={`OTP digit ${i + 1}`}
-                  className="w-full h-14 text-center text-xl font-bold border-2 border-gray-200 dark:border-emerald-700 bg-white dark:bg-emerald-900 text-gray-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-colors"
-                />
-              ))}
-            </div>
-
-            <Button type="submit" loading={loading} className="w-full py-3">
-              Verify Code
-            </Button>
-          </form>
-
-          <div className="mt-6 text-center">
-            {countdown > 0 ? (
-              <p className="text-sm text-gray-500 dark:text-emerald-400">
-                Resend code in{' '}
-                <span className="font-semibold text-emerald-600 dark:text-emerald-300">{countdown}s</span>
-              </p>
-            ) : (
-              <button
+          {!customerId ? (
+            /* No session — user is already registered but landed here without state */
+            <div className="flex flex-col gap-4">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-4 text-sm text-amber-800 dark:text-amber-300">
+                <p className="font-semibold mb-1">Session not found</p>
+                <p>
+                  If you already registered, try logging in — your account is unverified so
+                  we&apos;ll send you straight back here to enter your code.
+                </p>
+              </div>
+              <Button
                 type="button"
-                onClick={handleResend}
-                disabled={resendLoading}
-                className="text-sm text-emerald-600 dark:text-emerald-400 font-semibold hover:underline disabled:opacity-50"
+                onClick={() => navigate(ROUTES.login, { replace: true })}
+                className="w-full py-3"
               >
-                {resendLoading ? 'Sending…' : 'Resend OTP'}
-              </button>
-            )}
-          </div>
+                Go to Login
+              </Button>
+            </div>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                {/* OTP digit inputs */}
+                <div className="flex gap-3">
+                  {otp.map((digit, i) => (
+                    <input
+                      key={i}
+                      ref={(el) => { inputRefs.current[i] = el }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleChange(i, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(i, e)}
+                      aria-label={`OTP digit ${i + 1}`}
+                      className="w-full h-14 text-center text-xl font-bold border-2 border-gray-200 dark:border-emerald-700 bg-white dark:bg-emerald-900 text-gray-900 dark:text-white focus:border-emerald-500 focus:outline-none transition-colors"
+                    />
+                  ))}
+                </div>
+
+                <Button type="submit" loading={loading} disabled={otpExpired} className="w-full py-3">
+                  Verify Code
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={(countdown > 0 && !otpExpired) || resendLoading}
+                  className="text-sm text-emerald-600 dark:text-emerald-400 font-semibold hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {resendLoading
+                    ? 'Sending…'
+                    : countdown > 0 && !otpExpired
+                      ? `Resend OTP (${countdown}s)`
+                      : 'Resend OTP'}
+                </button>
+              </div>
+            </>
+          )}
 
           <p className="text-center text-sm text-gray-500 dark:text-emerald-300 mt-4">
             <Link to={ROUTES.login} className="text-emerald-600 dark:text-emerald-400 hover:underline">
