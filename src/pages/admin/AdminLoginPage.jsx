@@ -1,5 +1,6 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useAdminLogin } from '../../hooks/useAdminLogin'
 import { ROUTES } from '../../constants/routes'
 import Input from '../../components/common/Input'
@@ -10,7 +11,16 @@ import ThemeToggle from '../../components/common/ThemeToggle'
 // Requires: { email, password } body + X-ADMIN_ID header
 export default function AdminLoginPage() {
   const { login, loading } = useAdminLogin()
-  const { register, handleSubmit, formState: { errors } } = useForm()
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm()
+  const location = useLocation()
+
+  const adminIdFromReg = location.state?.adminId ?? null
+  const registrationSuccess = location.state?.registrationSuccess ?? false
+
+  // Pre-fill the Admin ID field if coming from registration
+  useEffect(() => {
+    if (adminIdFromReg) setValue('adminId', adminIdFromReg)
+  }, [adminIdFromReg, setValue])
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -60,6 +70,24 @@ export default function AdminLoginPage() {
             <span className="text-gray-900 dark:text-white font-bold text-lg">DigitalBank</span>
           </div>
 
+          {/* Admin ID banner shown immediately after registration */}
+          {registrationSuccess && adminIdFromReg && (
+            <div className="mb-5 px-4 py-3 bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-300 dark:border-emerald-600 rounded">
+              <p className="text-emerald-800 dark:text-emerald-300 text-xs font-semibold mb-1">
+                Account created successfully
+              </p>
+              <p className="text-emerald-700 dark:text-emerald-400 text-xs">
+                Your Admin ID is:{' '}
+                <span className="font-mono font-bold text-emerald-900 dark:text-white text-sm">
+                  {adminIdFromReg}
+                </span>
+              </p>
+              <p className="text-emerald-600 dark:text-emerald-500 text-xs mt-1">
+                Save this — it has been pre-filled below.
+              </p>
+            </div>
+          )}
+
           <div className="mb-4 px-3 py-2 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded">
             <p className="text-amber-800 dark:text-amber-300 text-xs font-semibold">
               Admin access only — not for customer accounts
@@ -75,7 +103,7 @@ export default function AdminLoginPage() {
             <Input
               label="Admin ID"
               name="adminId"
-              placeholder="e.g. ADM-00123"
+              placeholder="e.g. AD0001"
               required
               autoComplete="username"
               error={errors.adminId?.message}
@@ -108,6 +136,13 @@ export default function AdminLoginPage() {
           </form>
 
           <p className="text-center text-sm text-gray-500 dark:text-emerald-300 mt-6">
+            Need an account?{' '}
+            <Link to={ROUTES.adminRegister} className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">
+              Register here
+            </Link>
+          </p>
+
+          <p className="text-center text-sm text-gray-500 dark:text-emerald-300 mt-2">
             Not an admin?{' '}
             <Link to={ROUTES.login} className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">
               Customer sign in
