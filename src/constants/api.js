@@ -39,8 +39,9 @@ export const ENDPOINTS = {
   adminSuspend:        `${API_BASE}/admin/suspend-account`,
   adminReactivate:     (accountId) => `${API_BASE}/admin/reactivate-account/${accountId}`,
   adminCustomers:      `${API_BASE}/admin/customers`,
-  adminCustomerById:   (id) => `${API_BASE}/admin/customer-profile/${id}`,
-  adminTransactionById:(txId) => `${API_BASE}/admin/transaction/${txId}`,
+  adminCustomerById:          (id) => `${API_BASE}/admin/customer-profile/${id}`,
+  adminCustomerTransactions:  (accountNumber) => `${API_BASE}/admin/customer-transactions/${accountNumber}`,
+  adminTransactionById:       (txId) => `${API_BASE}/admin/transaction/${txId}`,
   adminStats:          `${API_BASE}/admin/stats`,
   adminAuditLogs:      `${API_BASE}/admin/get-all-audit-logs`,
 
