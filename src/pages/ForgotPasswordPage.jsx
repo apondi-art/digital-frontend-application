@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { forgotPassword } from '../api/authApi'
+import { forgotPasswordCustomer } from '../api/authApi'
 import { ROUTES } from '../constants/routes'
 import Input from '../components/common/Input'
 import Button from '../components/common/Button'
@@ -81,18 +81,19 @@ function HeroPanel() {
 export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { register, handleSubmit, formState: { errors } } = useForm()
+  const { register, handleSubmit, watch, formState: { errors } } = useForm()
+  const newPassword = watch('newPassword')
 
-  async function onSubmit({ email }) {
+  async function onSubmit({ email, newPassword: pwd, confirmPassword }) {
     setLoading(true)
     try {
-      await forgotPassword(email)
+      await forgotPasswordCustomer({ email, newPassword: pwd, confirmPassword })
+      setSubmitted(true)
+      toast.success('Password reset successfully.')
     } catch {
-      // Silently ignore errors — never confirm or deny that an email is registered
+      // Axios interceptor shows error toast
     } finally {
       setLoading(false)
-      setSubmitted(true)
-      toast.success('If that email is registered, a reset link has been sent.')
     }
   }
 
@@ -118,19 +119,19 @@ export default function ForgotPasswordPage() {
 
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Reset password</h1>
           <p className="text-gray-500 dark:text-emerald-300 text-sm mb-8">
-            Enter your email address and we&apos;ll send you a reset link.
+            Enter your email and choose a new password.
           </p>
 
           {submitted ? (
             <div className="bg-emerald-50 dark:bg-emerald-900/50 border border-emerald-200 dark:border-emerald-700 rounded-xl p-5">
               <p className="text-emerald-800 dark:text-emerald-200 text-sm leading-relaxed">
-                If an account with that email exists, a password reset link has been sent. Check your inbox and spam folder.
+                Your password has been reset successfully.
               </p>
               <Link
                 to={ROUTES.login}
                 className="inline-block mt-4 text-sm text-emerald-600 dark:text-emerald-400 font-semibold hover:underline"
               >
-                Back to Sign In
+                Sign In
               </Link>
             </div>
           ) : (
@@ -146,8 +147,38 @@ export default function ForgotPasswordPage() {
                   error={errors.email?.message}
                   {...register('email', { required: 'Email is required' })}
                 />
+                <Input
+                  label="New Password"
+                  name="newPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  autoComplete="new-password"
+                  error={errors.newPassword?.message}
+                  {...register('newPassword', {
+                    required: 'Password is required',
+                    minLength: { value: 8, message: 'Must be at least 8 characters' },
+                    pattern: {
+                      value: /(?=.*[A-Z])(?=.*\d)/,
+                      message: 'Must contain at least one uppercase letter and one number',
+                    },
+                  })}
+                />
+                <Input
+                  label="Confirm New Password"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  required
+                  autoComplete="new-password"
+                  error={errors.confirmPassword?.message}
+                  {...register('confirmPassword', {
+                    required: 'Please confirm your password',
+                    validate: (v) => v === newPassword || 'Passwords do not match',
+                  })}
+                />
                 <Button type="submit" loading={loading} className="w-full py-3 mt-1">
-                  Send Reset Link
+                  Reset Password
                 </Button>
               </form>
 
