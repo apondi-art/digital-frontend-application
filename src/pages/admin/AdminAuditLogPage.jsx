@@ -7,15 +7,14 @@ export default function AdminAuditLogPage() {
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [page, setPage] = useState(0)
+  const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(0)
   const [emailFilter, setEmailFilter] = useState('')
   const [emailInput, setEmailInput] = useState('')
 
-  const load = useCallback((p, email) => {
+  const load = useCallback((p) => {
     setLoading(true)
-    const filters = email ? { userEmail: email } : {}
-    getAuditLogs(p, 30, filters)
+    getAuditLogs(p, 30)
       .then((res) => {
         const d = res.data ?? res
         setLogs(d.content ?? d ?? [])
@@ -25,11 +24,15 @@ export default function AdminAuditLogPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  useEffect(() => { load(page, emailFilter) }, [load, page, emailFilter])
+  useEffect(() => { load(page) }, [load, page])
+
+  const filtered = emailFilter
+    ? logs.filter((l) => (l.userEmail ?? '').toLowerCase().includes(emailFilter.toLowerCase()))
+    : logs
 
   function handleSearch(e) {
     e.preventDefault()
-    setPage(0)
+    setPage(1)
     setEmailFilter(emailInput)
   }
 
@@ -88,16 +91,16 @@ export default function AdminAuditLogPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-emerald-900">
-                {logs.length === 0 ? (
+                {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-8 text-center text-gray-400 dark:text-emerald-500 text-sm">
                       No audit logs found.
                     </td>
                   </tr>
-                ) : logs.map((log, i) => (
+                ) : filtered.map((log, i) => (
                   <tr key={log.id ?? i} className="hover:bg-gray-50 dark:hover:bg-emerald-900/30 transition-colors">
                     <td className="py-2.5 pr-4 text-xs text-gray-400 dark:text-emerald-500 whitespace-nowrap">
-                      {formatDate(log.createdAt ?? log.timestamp)}
+                      {formatDate(log.timeOfCreation ?? log.createdAt)}
                     </td>
                     <td className="py-2.5 pr-4">
                       <span className="text-xs font-mono font-semibold text-gray-700 dark:text-emerald-300 bg-gray-100 dark:bg-emerald-900 px-2 py-0.5 rounded">
@@ -119,16 +122,16 @@ export default function AdminAuditLogPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between text-sm">
               <button
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-                disabled={page === 0}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
                 className="px-4 py-2 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
               >
                 ← Previous
               </button>
-              <span className="text-gray-500 dark:text-emerald-400">Page {page + 1} of {totalPages}</span>
+              <span className="text-gray-500 dark:text-emerald-400">Page {page} of {totalPages}</span>
               <button
-                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                disabled={page >= totalPages - 1}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
                 className="px-4 py-2 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
               >
                 Next →

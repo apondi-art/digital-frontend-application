@@ -176,12 +176,7 @@ export default function RegisterPage() {
               error={errors.password?.message}
               {...register('password', {
                 required: 'Password is required',
-                minLength: { value: 8, message: 'Min 8 characters' },
-                validate: (v) => {
-                  if (!/[A-Z]/.test(v)) return 'Must contain an uppercase letter'
-                  if (!/[0-9]/.test(v)) return 'Must contain a number'
-                  return true
-                },
+                minLength: { value: 8, message: 'Password must be at least 8 characters' },
               })}
             />
             <Select
@@ -203,10 +198,10 @@ export default function RegisterPage() {
               error={errors.dateOfBirth?.message}
               {...register('dateOfBirth', {
                 required: 'Date of birth is required',
-                validate: (v) => {
-                  const age = (Date.now() - new Date(v)) / (365.25 * 24 * 3600 * 1000)
-                  return age >= 18 || 'You must be at least 18 years old'
-                },
+                // validate: (v) => {
+                //   const age = (Date.now() - new Date(v)) / (365.25 * 24 * 3600 * 1000)
+                //   return age >= 18 || 'You must be at least 18 years old'
+                // },
               })}
             />
             <Input

@@ -71,7 +71,6 @@ export default function AdminCustomersPage() {
         </div>
       </div>
 
-      {/* Search */}
       <form onSubmit={handleSearch} className="flex gap-2">
         <input
           type="text"
@@ -136,7 +135,6 @@ export default function AdminCustomersPage() {
             </table>
           </Card>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between text-sm">
               <button

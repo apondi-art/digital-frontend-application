@@ -5,6 +5,7 @@ export const ROUTES = {
   register:         '/register',
   businessRegister: '/register/business',
   adminRegister:    '/register/admin',
+  adminLogin:       '/login/admin',
   forgotPassword:   '/forgot-password',
   resetPassword:    '/reset-password',
   verifyOtp:        '/verify-otp',
@@ -18,6 +19,7 @@ export const ROUTES = {
   businessDashboard: '/business/dashboard',
   // Admin
   adminDashboard:   '/admin/dashboard',
+  adminCreateAdmin: '/admin/create-admin',
   adminCustomers:   '/admin/customers',
   adminKycQueue:    '/admin/kyc/pending',
   adminTransactions:'/admin/transactions',

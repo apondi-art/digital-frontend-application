@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { depositFunds } from '../api/transactionApi'
-import { getAccountId } from './useAccount'
 
 // Handles POST /api/transaction/deposit
 // Backend may return 201 (SUCCESSFUL) or 202 (PENDING)
@@ -16,7 +15,7 @@ export function useDeposit() {
     setResult(null)
     setError(null)
     try {
-      const res = await depositFunds({ ...payload, accountId: getAccountId() })
+      const res = await depositFunds(payload)
       setResult(res.data)
       if (res.data?.status === 'PENDING') {
         toast('Deposit pending — use Re-query to check status', { icon: '⏳' })

@@ -176,6 +176,22 @@ export default function LoginPage() {
               Create one free
             </Link>
           </p>
+
+          {/* Admin quick access */}
+          <div className="mt-5 pt-4 border-t border-gray-100 dark:border-emerald-800 flex gap-3 justify-center">
+            <Link
+              to={ROUTES.adminLogin}
+              className="flex-1 text-center text-xs px-3 py-2 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900 transition-colors font-medium"
+            >
+              Admin Sign In
+            </Link>
+            <Link
+              to={ROUTES.adminRegister}
+              className="flex-1 text-center text-xs px-3 py-2 border border-gray-200 dark:border-emerald-800 text-gray-500 dark:text-emerald-500 hover:bg-gray-50 dark:hover:bg-emerald-900/50 transition-colors"
+            >
+              Register as Admin
+            </Link>
+          </div>
         </div>
       </div>
     </div>

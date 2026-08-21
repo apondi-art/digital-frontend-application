@@ -17,8 +17,8 @@ const LoginPage              = lazy(() => import('./pages/LoginPage'))
 const RegisterPage           = lazy(() => import('./pages/RegisterPage'))
 const BusinessRegisterPage   = lazy(() => import('./pages/BusinessRegisterPage'))
 const ForgotPasswordPage     = lazy(() => import('./pages/ForgotPasswordPage'))
-const ResetPasswordPage      = lazy(() => import('./pages/ResetPasswordPage'))
 const VerifyOtpPage          = lazy(() => import('./pages/VerifyOtpPage'))
+const ResetPasswordPage      = lazy(() => import('./pages/ResetPasswordPage'))
 const NotFoundPage           = lazy(() => import('./pages/NotFoundPage'))
 
 // Customer pages
@@ -32,6 +32,7 @@ const TransactionHistoryPage = lazy(() => import('./pages/TransactionHistoryPage
 const BusinessDashboardPage  = lazy(() => import('./pages/BusinessDashboardPage'))
 
 // Admin pages
+const AdminLoginPage          = lazy(() => import('./pages/admin/AdminLoginPage'))
 const AdminRegisterPage       = lazy(() => import('./pages/admin/AdminRegisterPage'))
 const AdminDashboardPage      = lazy(() => import('./pages/admin/AdminDashboardPage'))
 const AdminCustomersPage      = lazy(() => import('./pages/admin/AdminCustomersPage'))
@@ -39,6 +40,7 @@ const AdminCustomerDetailPage = lazy(() => import('./pages/admin/AdminCustomerDe
 const AdminKycQueuePage       = lazy(() => import('./pages/admin/AdminKycQueuePage'))
 const AdminTransactionsPage   = lazy(() => import('./pages/admin/AdminTransactionsPage'))
 const AdminAuditLogPage       = lazy(() => import('./pages/admin/AdminAuditLogPage'))
+const AdminCreateAdminPage    = lazy(() => import('./pages/admin/AdminCreateAdminPage'))
 
 function PageLoader() {
   return (
@@ -66,6 +68,7 @@ export default function App() {
             <Route path={ROUTES.register}         element={<RegisterPage />} />
             <Route path={ROUTES.businessRegister} element={<BusinessRegisterPage />} />
             <Route path={ROUTES.adminRegister}    element={<AdminRegisterPage />} />
+            <Route path={ROUTES.adminLogin}       element={<AdminLoginPage />} />
             <Route path={ROUTES.forgotPassword}   element={<ForgotPasswordPage />} />
             <Route path={ROUTES.resetPassword}    element={<ResetPasswordPage />} />
             <Route path={ROUTES.verifyOtp}        element={<VerifyOtpPage />} />
@@ -93,6 +96,7 @@ export default function App() {
                 <Route path={ROUTES.adminKycQueue}     element={<AdminKycQueuePage />} />
                 <Route path={ROUTES.adminTransactions} element={<AdminTransactionsPage />} />
                 <Route path={ROUTES.adminAuditLogs}    element={<AdminAuditLogPage />} />
+                <Route path={ROUTES.adminCreateAdmin}  element={<AdminCreateAdminPage />} />
               </Route>
             </Route>
 

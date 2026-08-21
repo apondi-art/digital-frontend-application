@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getStatsOverview } from '../../api/adminApi'
-import { formatNaira } from '../../utils/format'
+import { getStats } from '../../api/adminApi'
 import Card from '../../components/common/Card'
 
 function StatCard({ label, value, loading, accent = '' }) {
@@ -22,7 +21,7 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    getStatsOverview()
+    getStats()
       .then((res) => setStats(res.data ?? res))
       .catch(() => setError('Failed to load stats'))
       .finally(() => setLoading(false))
@@ -45,12 +44,12 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <StatCard label="Total Customers"         value={stats?.totalCustomers}                      loading={loading} />
-        <StatCard label="Active Accounts"          value={stats?.activeAccounts}                      loading={loading} />
-        <StatCard label="Transaction Volume Today" value={stats?.transactionVolumeToday != null ? formatNaira(stats.transactionVolumeToday) : null} loading={loading} />
-        <StatCard label="KYC Pending Review"       value={stats?.kycPending}                          loading={loading} accent="border-amber-200 dark:border-amber-800" />
-        <StatCard label="Suspended Accounts"       value={stats?.suspendedAccounts}                   loading={loading} accent="border-red-200 dark:border-red-900" />
-        <StatCard label="Transaction Count Today"  value={stats?.transactionCountToday}               loading={loading} />
+        <StatCard label="Total Accounts"    value={stats?.totalAccount}          loading={loading} />
+        <StatCard label="Active Accounts"   value={stats?.totalActiveAccount}    loading={loading} />
+        <StatCard label="Dormant Accounts"  value={stats?.totalDormantAccount}   loading={loading} />
+        <StatCard label="Suspended Accounts" value={stats?.totalSuspendedAccount} loading={loading} accent="border-red-200 dark:border-red-900" />
+        <StatCard label="Tier 1 Accounts"   value={stats?.totalTier1Account}     loading={loading} />
+        <StatCard label="Tier 2 Accounts"   value={stats?.totalTier2Account}     loading={loading} />
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useSearchParams, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { resetPassword } from '../api/authApi'
 import { ROUTES } from '../constants/routes'
@@ -76,43 +76,21 @@ function HeroPanel() {
 
 export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
-  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const token = searchParams.get('token')
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm()
   const newPassword = watch('newPassword')
 
-  async function onSubmit({ newPassword: pwd }) {
-    if (!token) return
+  async function onSubmit({ newPassword: pwd, confirmPassword: confirmPwd }) {
     setLoading(true)
     try {
-      await resetPassword(token, pwd)
+      await resetPassword(pwd, confirmPwd)
       navigate(ROUTES.login, { state: { passwordResetSuccess: true }, replace: true })
     } catch {
       // Axios interceptor shows the error toast
     } finally {
       setLoading(false)
     }
-  }
-
-  if (!token) {
-    return (
-      <div className="min-h-screen grid lg:grid-cols-2">
-        <HeroPanel />
-        <div className="flex items-center justify-center px-6 py-16 bg-white dark:bg-emerald-950">
-          <div className="w-full max-w-sm text-center">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invalid reset link</h1>
-            <p className="text-sm text-gray-500 dark:text-emerald-300 mb-6">
-              This link is missing a reset token. Please request a new one.
-            </p>
-            <Link to={ROUTES.forgotPassword} className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline text-sm">
-              Request new link
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (

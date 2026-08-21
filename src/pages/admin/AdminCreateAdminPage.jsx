@@ -1,57 +1,51 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
-import { useAdminRegister } from '../../hooks/useAdminRegister'
-import { ROUTES } from '../../constants/routes'
+import toast from 'react-hot-toast'
+import { createAdmin } from '../../api/adminApi'
 import Input from '../../components/common/Input'
 import Button from '../../components/common/Button'
-import ThemeToggle from '../../components/common/ThemeToggle'
+import Card from '../../components/common/Card'
 
-// Accessible only via direct URL /register/admin — not publicly linked anywhere.
-export default function AdminRegisterPage() {
-  const { registerAdmin, loading } = useAdminRegister()
-  const { register, handleSubmit, formState: { errors } } = useForm()
+const MIN_DOB = (() => {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - 100)
+  return d.toISOString().split('T')[0]
+})()
 
-  const MIN_DOB = (() => {
-    const d = new Date()
-    d.setFullYear(d.getFullYear() - 100)
-    return d.toISOString().split('T')[0]
-  })()
-  const MAX_DOB = (() => {
-    const d = new Date()
-    d.setFullYear(d.getFullYear() - 18)
-    return d.toISOString().split('T')[0]
-  })()
+const MAX_DOB = (() => {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - 18)
+  return d.toISOString().split('T')[0]
+})()
+
+export default function AdminCreateAdminPage() {
+  const [loading, setLoading] = useState(false)
+  const { register, handleSubmit, reset, formState: { errors } } = useForm()
+
+  async function onSubmit(data) {
+    setLoading(true)
+    try {
+      await createAdmin(data)
+      toast.success('Admin account created successfully')
+      reset()
+    } catch {
+      // Axios interceptor shows error toast
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-emerald-950 px-6 py-16">
-      <div className="absolute top-4 right-4 flex items-center gap-2">
-        <Link to={ROUTES.home} className="text-xs text-gray-500 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-white transition-colors px-2 py-1">
-          ← Home
-        </Link>
-        <ThemeToggle />
+    <div className="max-w-2xl space-y-6">
+      <div>
+        <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">Create Admin</h2>
+        <p className="text-gray-500 dark:text-emerald-300 text-sm mt-1">
+          Add a new admin user to the platform.
+        </p>
       </div>
 
-      <div className="w-full max-w-md">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-9 bg-emerald-400 flex items-center justify-center text-emerald-900 font-black text-sm">DB</div>
-          <span className="text-gray-900 dark:text-white font-bold text-lg">DigitalBank</span>
-        </div>
-
-        <div className="mb-3 px-3 py-2 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700">
-          <p className="text-amber-800 dark:text-amber-300 text-xs font-semibold">
-            Admin Account Creation — Restricted Access
-          </p>
-          <p className="text-amber-700 dark:text-amber-400 text-xs mt-1">
-            Your Admin ID will be emailed to you after registration. You need it to sign in at <strong>/login/admin</strong>.
-          </p>
-        </div>
-
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Create Admin Account</h1>
-        <p className="text-gray-500 dark:text-emerald-300 text-sm mb-8">
-          This page is for creating new admin accounts. It is not publicly linked.
-        </p>
-
-        <form onSubmit={handleSubmit(registerAdmin)} className="flex flex-col gap-5">
+      <Card>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="First Name"
@@ -94,7 +88,6 @@ export default function AdminRegisterPage() {
             })}
           />
 
-          {/* Gender — required by backend as enum MALE | FEMALE | OTHER */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-gray-600 dark:text-emerald-400 uppercase tracking-wide">
               Gender <span className="text-red-500">*</span>
@@ -118,8 +111,8 @@ export default function AdminRegisterPage() {
             required
             min={MIN_DOB}
             max={MAX_DOB}
-            error={errors.dateOfBirth?.message}
             hint="Admin must be 18 or older"
+            error={errors.dateOfBirth?.message}
             {...register('dateOfBirth', {
               required: 'Date of birth is required',
               validate: (v) => {
@@ -138,20 +131,18 @@ export default function AdminRegisterPage() {
             {...register('address', { required: 'Address is required' })}
           />
 
-          {/* Password — backend requires 10–15 chars, 1 uppercase, 1 number */}
           <Input
             label="Password"
             name="password"
             type="password"
-            placeholder="••••••••••"
+            placeholder="••••••••"
             required
             autoComplete="new-password"
+            hint="Minimum 8 characters, one uppercase letter, one number"
             error={errors.password?.message}
-            hint="10–15 characters, at least one uppercase letter and one number"
             {...register('password', {
               required: 'Password is required',
-              minLength: { value: 10, message: 'At least 10 characters' },
-              maxLength: { value: 15, message: 'Maximum 15 characters' },
+              minLength: { value: 8, message: 'At least 8 characters' },
               pattern: { value: /(?=.*[A-Z])(?=.*\d)/, message: 'Must include an uppercase letter and a number' },
             })}
           />
@@ -160,14 +151,7 @@ export default function AdminRegisterPage() {
             Create Admin Account
           </Button>
         </form>
-
-        <p className="text-center text-sm text-gray-500 dark:text-emerald-300 mt-6">
-          Already have an account?{' '}
-          <Link to={ROUTES.adminLogin} className="text-emerald-600 dark:text-emerald-400 hover:underline">
-            Admin sign in
-          </Link>
-        </p>
-      </div>
+      </Card>
     </div>
   )
 }
