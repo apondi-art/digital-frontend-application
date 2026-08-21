@@ -1,4 +1,7 @@
-export default function Pagination({ page, totalPages, onPage, totalItems, pageSize, loading = false }) {
+export default function Pagination({ page, totalPages: totalPagesProp, onPage, totalItems, pageSize, loading = false }) {
+  // Derive totalPages from totalItems/pageSize when the server omits it
+  const totalPages = totalPagesProp || (totalItems && pageSize ? Math.ceil(totalItems / pageSize) : 0)
+
   if (!totalPages) return null
 
   const isPrevDisabled = page === 0 || loading
