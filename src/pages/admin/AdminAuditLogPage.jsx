@@ -21,13 +21,20 @@ export default function AdminAuditLogPage() {
     setError(null)
     getAuditLogs(page + 1, PAGE_SIZE)
       .then((res) => {
-        console.log('[AuditLog] raw response:', res)
         const d = res.data ?? res
-        console.log('[AuditLog] d:', d)
-        console.log('[AuditLog] totalPages:', d.totalPages, 'totalElements:', d.totalElements)
-        setLogs(d.content ?? d ?? [])
-        setTotalPages(d.totalPages ?? 1)
-        setTotalItems(d.totalElements ?? 0)
+        const content = d.content ?? (Array.isArray(d) ? d : [])
+        const totalEl = d.totalElements ?? d.totalElement ?? 0
+        setLogs(content)
+        setTotalItems(totalEl)
+        // Derive totalPages from server value → totalElements fallback → content-length heuristic
+        // The heuristic (page + 2) enables Next whenever a full page is returned, even when
+        // the backend omits pagination metadata. The last page will come back empty and Next
+        // will then be disabled (page + 1 = current page, which is the final page).
+        const pages =
+          d.totalPages ??
+          (totalEl > 0 ? Math.ceil(totalEl / PAGE_SIZE) : null) ??
+          (content.length >= PAGE_SIZE ? page + 2 : page + 1)
+        setTotalPages(pages)
       })
       .catch(() => setError('Failed to load audit logs'))
       .finally(() => setLoading(false))
@@ -56,7 +63,6 @@ export default function AdminAuditLogPage() {
         <p className="text-gray-500 dark:text-emerald-300 text-sm mt-1">
           Immutable record of every sensitive action on the platform.
         </p>
-        <p className="text-xs text-red-500 mt-1">DEBUG: page={page} totalPages={totalPages} totalItems={totalItems} loading={String(loading)}</p>
       </div>
 
       <form onSubmit={handleSearch} className="flex gap-2">
