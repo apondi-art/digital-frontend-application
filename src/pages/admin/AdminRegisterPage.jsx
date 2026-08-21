@@ -7,12 +7,9 @@ import Button from '../../components/common/Button'
 import ThemeToggle from '../../components/common/ThemeToggle'
 
 // Accessible only via direct URL /register/admin — not publicly linked anywhere.
-// Once the backend secures create-admin-account to require ADMIN role,
-// wrap this route with AdminRoute.
 export default function AdminRegisterPage() {
   const { registerAdmin, loading } = useAdminRegister()
-  const { register, handleSubmit, formState: { errors }, watch } = useForm()
-  const password = watch('password')
+  const { register, handleSubmit, formState: { errors } } = useForm()
 
   const MIN_DOB = (() => {
     const d = new Date()
@@ -44,6 +41,9 @@ export default function AdminRegisterPage() {
           <p className="text-amber-800 dark:text-amber-300 text-xs font-semibold">
             Admin Account Creation — Restricted Access
           </p>
+          <p className="text-amber-700 dark:text-amber-400 text-xs mt-1">
+            Your Admin ID will be emailed to you after registration. You need it to sign in at <strong>/login/admin</strong>.
+          </p>
         </div>
 
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Create Admin Account</h1>
@@ -70,6 +70,7 @@ export default function AdminRegisterPage() {
               {...register('lastName', { required: 'Required' })}
             />
           </div>
+
           <Input
             label="Email Address"
             name="email"
@@ -79,6 +80,7 @@ export default function AdminRegisterPage() {
             error={errors.email?.message}
             {...register('email', { required: 'Email is required' })}
           />
+
           <Input
             label="Phone Number"
             name="phoneNumber"
@@ -88,9 +90,27 @@ export default function AdminRegisterPage() {
             error={errors.phoneNumber?.message}
             {...register('phoneNumber', {
               required: 'Phone number is required',
-              pattern: { value: /^(\+234|0)[789]\d{9}$/, message: 'Enter a valid Nigerian phone number' },
+              pattern: { value: /^0[789][01]\d{8}$/, message: 'Enter a valid Nigerian phone number' },
             })}
           />
+
+          {/* Gender — required by backend as enum MALE | FEMALE | OTHER */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-gray-600 dark:text-emerald-400 uppercase tracking-wide">
+              Gender <span className="text-red-500">*</span>
+            </label>
+            <select
+              {...register('gender', { required: 'Gender is required' })}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-emerald-700 bg-white dark:bg-emerald-900 text-gray-900 dark:text-white focus:outline-none focus:border-emerald-400"
+            >
+              <option value="">Select gender</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="OTHER">Other</option>
+            </select>
+            {errors.gender && <p className="text-xs text-red-500">{errors.gender.message}</p>}
+          </div>
+
           <Input
             label="Date of Birth"
             name="dateOfBirth"
@@ -108,6 +128,7 @@ export default function AdminRegisterPage() {
               },
             })}
           />
+
           <Input
             label="Address"
             name="address"
@@ -116,18 +137,21 @@ export default function AdminRegisterPage() {
             error={errors.address?.message}
             {...register('address', { required: 'Address is required' })}
           />
+
+          {/* Password — backend requires 10–15 chars, 1 uppercase, 1 number */}
           <Input
             label="Password"
             name="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="••••••••••"
             required
             autoComplete="new-password"
             error={errors.password?.message}
-            hint="Minimum 8 characters, one uppercase letter, one number"
+            hint="10–15 characters, at least one uppercase letter and one number"
             {...register('password', {
               required: 'Password is required',
-              minLength: { value: 8, message: 'At least 8 characters' },
+              minLength: { value: 10, message: 'At least 10 characters' },
+              maxLength: { value: 15, message: 'Maximum 15 characters' },
               pattern: { value: /(?=.*[A-Z])(?=.*\d)/, message: 'Must include an uppercase letter and a number' },
             })}
           />
@@ -138,8 +162,9 @@ export default function AdminRegisterPage() {
         </form>
 
         <p className="text-center text-sm text-gray-500 dark:text-emerald-300 mt-6">
-          <Link to={ROUTES.login} className="text-emerald-600 dark:text-emerald-400 hover:underline">
-            Back to Sign In
+          Already have an account?{' '}
+          <Link to={ROUTES.adminLogin} className="text-emerald-600 dark:text-emerald-400 hover:underline">
+            Admin sign in
           </Link>
         </p>
       </div>
