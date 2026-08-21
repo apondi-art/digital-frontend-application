@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useKyc } from '../hooks/useKyc'
-import { useAccount } from '../hooks/useAccount'
+import { useAccount, setAccount } from '../hooks/useAccount'
+import { getUserProfile } from '../api/accountApi'
 import Select from '../components/common/Select'
 import Input from '../components/common/Input'
 import Button from '../components/common/Button'
@@ -23,6 +25,21 @@ const TIER_LABEL_MAP = {
 export default function KycPage() {
   const { submitKyc, loading, result } = useKyc()
   const { accountTier } = useAccount()
+
+  // Re-fetch profile on mount so the tier badge always reflects the latest approved status
+  useEffect(() => {
+    getUserProfile()
+      .then((res) => {
+        const data = res.data
+        if (data) {
+          setAccount({
+            accountNumber: data.accountDto?.accountNumber ?? null,
+            accountTier:   data.accountDto?.accountTier   ?? null,
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const {
     register,
@@ -102,13 +119,16 @@ export default function KycPage() {
       {result && (
         <Card className="mt-4">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center text-emerald-600 dark:text-emerald-300 text-lg shrink-0">✓</div>
+            <div className="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 dark:text-amber-400 text-lg shrink-0">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
             <div>
-              <p className="font-semibold text-gray-900 dark:text-white text-sm">Verification approved</p>
+              <p className="font-semibold text-gray-900 dark:text-white text-sm">Awaiting admin approval</p>
               <p className="text-gray-500 dark:text-emerald-300 text-sm mt-0.5">
-                Your {result.documentType} has been verified. Your account has been upgraded to{' '}
-                <strong>{KYC_TIERS[result.documentType]?.tier}</strong> with a daily transfer limit of{' '}
-                <strong>{KYC_TIERS[result.documentType]?.limit}</strong>.
+                Your {result.documentType} has been submitted and is pending review. Your account will be
+                upgraded to <strong>{KYC_TIERS[result.documentType]?.tier}</strong> once an admin approves it.
               </p>
             </div>
           </div>
