@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { getCustomerById, suspendCustomer, reactivateCustomer } from '../../api/adminApi'
+import { getCustomerByAccountNumber, suspendCustomer, reactivateCustomer } from '../../api/adminApi'
 import { formatDate, formatNaira } from '../../utils/format'
 import { ROUTES } from '../../constants/routes'
 import Card from '../../components/common/Card'
@@ -17,7 +17,7 @@ export default function AdminCustomerDetailPage() {
   const [showSuspendForm, setShowSuspendForm] = useState(false)
 
   useEffect(() => {
-    getCustomerById(id)
+    getCustomerByAccountNumber(id)
       .then((res) => setCustomer(res.data ?? res))
       .catch(() => toast.error('Failed to load customer'))
       .finally(() => setLoading(false))
@@ -30,7 +30,7 @@ export default function AdminCustomerDetailPage() {
     }
     setActionLoading(true)
     try {
-      await suspendCustomer(id, suspendReason)
+      await suspendCustomer(customer.id, suspendReason)
       toast.success('Account suspended')
       setCustomer((c) => ({ ...c, accountStatus: 'SUSPENDED' }))
       setShowSuspendForm(false)
@@ -45,7 +45,7 @@ export default function AdminCustomerDetailPage() {
   async function handleReactivate() {
     setActionLoading(true)
     try {
-      await reactivateCustomer(id)
+      await reactivateCustomer(customer.id)
       toast.success('Account reactivated')
       setCustomer((c) => ({ ...c, accountStatus: 'ACTIVE' }))
     } catch {
