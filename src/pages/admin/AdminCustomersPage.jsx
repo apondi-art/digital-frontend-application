@@ -60,9 +60,11 @@ export default function AdminCustomersPage() {
     getCustomers(page, PAGE_SIZE)
       .then((res) => {
         const d = res.data ?? res
-        setAllCustomers(d.content ?? d ?? [])
-        setTotalPages(d.totalPages ?? 1)
-        setTotalItems(d.totalElements ?? 0)
+        const content = d.content ?? (Array.isArray(d) ? d : [])
+        const totalEl = d.totalElements ?? 0
+        setAllCustomers(content)
+        setTotalItems(totalEl)
+        setTotalPages(d.totalPages ?? (totalEl > 0 ? Math.ceil(totalEl / PAGE_SIZE) : 0))
       })
       .catch(() => setError('Failed to load customers'))
       .finally(() => setLoading(false))
