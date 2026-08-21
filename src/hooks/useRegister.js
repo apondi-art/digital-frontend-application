@@ -14,14 +14,11 @@ export function useRegister() {
     setLoading(true)
     const payload = { ...formData }
     try {
-      const res = await createPersonalAccount(payload)
-      const accountNumber = res.data?.accountNumber
-      if (!accountNumber) throw new Error('No account number returned by server')
-      // Navigate to login with a success message — no JWT exists yet so we cannot access protected routes
-      navigate(ROUTES.login, {
-        state: { registrationSuccess: true, accountNumber },
-        replace: true,
-      })
+      await createPersonalAccount(payload)
+      // Registration response only returns accountNumber — no customerId is available.
+      // Send user to login; if account is PENDING_VERIFICATION, useLogin redirects to /verify-otp.
+      toast.success('Account created! Please log in to verify your account.')
+      navigate(ROUTES.login, { replace: true })
       return true
     } catch {
       // Axios interceptor already showed the error toast; just signal failure
