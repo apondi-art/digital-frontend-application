@@ -144,17 +144,18 @@ export default function DashboardPage() {
         const data = res.data
         if (data) {
           setAccount({
-            accountId:   data.id,
-            firstName:   data.firstName,
-            lastName:    data.lastName,
-            email:       data.email,
-            phoneNumber: data.phoneNumber,
-            gender:      data.gender,
-            dateOfBirth: data.dateOfBirth,
-            address:     data.address,
-            nin:         data.nin,
-            bvn:         data.bvn,
-            accountTier: data.accountTier,
+            accountId:     data.id,
+            firstName:     data.firstName,
+            lastName:      data.lastName,
+            email:         data.email,
+            phoneNumber:   data.phoneNumber,
+            gender:        data.gender,
+            dateOfBirth:   data.dateOfBirth,
+            address:       data.address,
+            nin:           data.nin,
+            bvn:           data.bvn,
+            accountNumber: data.accountDto?.accountNumber ?? null,
+            accountTier:   data.accountDto?.accountTier   ?? null,
           })
         }
       })

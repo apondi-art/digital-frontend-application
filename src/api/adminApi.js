@@ -42,6 +42,10 @@ export const getCustomers = (page = 0, size = 20, /* search = '' */) =>
 export const getCustomerByAccountNumber = (accountNumber) =>
   client.get(ENDPOINTS.adminCustomerById(accountNumber)).then((r) => r.data)
 
+// GET /api/admin/customer-transactions/{accountNumber}
+export const getCustomerTransactions = (accountNumber) =>
+  client.get(ENDPOINTS.adminCustomerTransactions(accountNumber)).then((r) => r.data)
+
 // GET /api/admin/transaction/{txId}
 export const getTransactionById = (txId) =>
   client.get(ENDPOINTS.adminTransactionById(txId)).then((r) => r.data)

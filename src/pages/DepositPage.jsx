@@ -32,13 +32,6 @@ export default function DepositPage() {
       <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Deposit Funds</h2>
       <p className="text-gray-500 dark:text-emerald-400 text-sm mb-6">Fund your account using a debit card.</p>
 
-      {/* Test card helper */}
-      <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 dark:bg-emerald-900 dark:border-emerald-700 dark:text-emerald-300">
-        <strong>Test Cards:</strong>
-        <br />• 7893234572819472 — SOLOMON GRUNDY — 2029-01 — CVC 324 → Immediate
-        <br />• 1234567893824913 — CHIOMA PRECIOUS — 2027-08 — CVC 372 → Pending
-      </div>
-
       <Card>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">

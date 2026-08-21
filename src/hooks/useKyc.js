@@ -12,7 +12,7 @@ export function useKyc() {
     try {
       const res = await submitKycDocument(formData)
       setResult({ documentType: formData.documentType })
-      toast.success(res.message ?? 'KYC document submitted successfully!')
+      toast.success(res.message ?? 'Document submitted — pending admin approval.')
       return true
     } catch {
       // Axios interceptor already showed the error toast

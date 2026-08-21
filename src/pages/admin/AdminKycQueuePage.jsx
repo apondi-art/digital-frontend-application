@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { getPendingKyc, approveKyc, rejectKyc, getPendingKycById } from '../../api/adminApi'
 import { formatDate } from '../../utils/format'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
+import Pagination from '../../components/common/Pagination'
 
 function RejectDialog({ kycId, onConfirm, onCancel, loading }) {
   const [reason, setReason] = useState('')
@@ -33,11 +34,14 @@ function RejectDialog({ kycId, onConfirm, onCancel, loading }) {
   )
 }
 
+const PAGE_SIZE = 10
+
 export default function AdminKycQueuePage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  const [totalItems, setTotalItems] = useState(0)
   const [actionId, setActionId] = useState(null)
   const [rejectingId, setRejectingId] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
@@ -45,19 +49,23 @@ export default function AdminKycQueuePage() {
   const [detail, setDetail] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
 
-  const load = useCallback((p) => {
+  useEffect(() => {
     setLoading(true)
-    getPendingKyc(p, 20)
+    getPendingKyc(page, PAGE_SIZE)
       .then((res) => {
         const d = res.data ?? res
-        setItems(d.content ?? d ?? [])
-        setTotalPages(d.totalPages ?? 1)
+        const content = d.content ?? (Array.isArray(d) ? d : [])
+        const totalEl = d.totalElements ?? 0
+        setItems(content)
+        setTotalItems(totalEl)
+        setTotalPages(d.totalPages ?? (totalEl > 0 ? Math.ceil(totalEl / PAGE_SIZE) : 0))
       })
       .catch(() => toast.error('Failed to load KYC queue'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [page])
 
-  useEffect(() => { load(page) }, [load, page])
+  // Resolve the KYC record ID from whichever field the backend uses
+  const getKycId = (item) => item.kycId ?? item.id ?? item.kyc_id
 
   async function handleApprove(id) {
     setActionLoading(true)
@@ -65,7 +73,7 @@ export default function AdminKycQueuePage() {
     try {
       await approveKyc(id)
       toast.success('KYC approved — account tier upgraded')
-      setItems((prev) => prev.filter((i) => i.id !== id))
+      setItems((prev) => prev.filter((i) => getKycId(i) !== id))
     } catch {
       // Axios shows error
     } finally {
@@ -97,7 +105,7 @@ export default function AdminKycQueuePage() {
     try {
       await rejectKyc(id, reason)
       toast.success('KYC rejected — customer notified')
-      setItems((prev) => prev.filter((i) => i.id !== id))
+      setItems((prev) => prev.filter((i) => getKycId(i) !== id))
       setRejectingId(null)
     } catch {
       // Axios shows error
@@ -130,8 +138,10 @@ export default function AdminKycQueuePage() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {items.map((item) => (
-            <Card key={item.id}>
+          {items.map((item) => {
+            const kycId = getKycId(item)
+            return (
+            <Card key={kycId ?? item.customerId ?? item.accountId}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -149,27 +159,27 @@ export default function AdminKycQueuePage() {
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button
-                    onClick={() => handleViewDetail(item.accountId ?? item.customerId, item.id)}
+                    onClick={() => handleViewDetail(item.accountId ?? item.customerId, kycId)}
                     className="px-3 py-1.5 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
                   >
-                    {detailId === item.id ? 'Hide' : 'Details'}
+                    {detailId === kycId ? 'Hide' : 'Details'}
                   </button>
                   <button
-                    onClick={() => handleApprove(item.id)}
-                    disabled={actionLoading && actionId === item.id}
+                    onClick={() => handleApprove(kycId)}
+                    disabled={actionLoading && actionId === kycId}
                     className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                   >
-                    {actionLoading && actionId === item.id ? '…' : 'Approve'}
+                    {actionLoading && actionId === kycId ? '…' : 'Approve'}
                   </button>
                   <button
-                    onClick={() => setRejectingId(rejectingId === item.id ? null : item.id)}
+                    onClick={() => setRejectingId(rejectingId === kycId ? null : kycId)}
                     className="px-3 py-1.5 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
                     Reject
                   </button>
                 </div>
               </div>
-              {detailId === item.id && (
+              {detailId === kycId && (
                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-emerald-800 text-sm">
                   {detailLoading ? (
                     <div className="h-16 bg-gray-100 dark:bg-emerald-800 rounded animate-pulse" />
@@ -191,38 +201,27 @@ export default function AdminKycQueuePage() {
                   ) : null}
                 </div>
               )}
-              {rejectingId === item.id && (
+              {rejectingId === kycId && (
                 <RejectDialog
-                  kycId={item.id}
+                  kycId={kycId}
                   onConfirm={handleReject}
                   onCancel={() => setRejectingId(null)}
-                  loading={actionLoading && actionId === item.id}
+                  loading={actionLoading && actionId === kycId}
                 />
               )}
             </Card>
-          ))}
+          )})}
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
-          <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="px-4 py-2 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
-          >
-            ← Previous
-          </button>
-          <span className="text-gray-500 dark:text-emerald-400">Page {page + 1} of {totalPages}</span>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-            className="px-4 py-2 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
-          >
-            Next →
-          </button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={PAGE_SIZE}
+        loading={loading}
+        onPage={setPage}
+      />
     </div>
   )
 }
