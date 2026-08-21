@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { getPendingKyc, approveKyc, rejectKyc, getPendingKycById } from '../../api/adminApi'
 import { formatDate } from '../../utils/format'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
+import Pagination from '../../components/common/Pagination'
 
 function RejectDialog({ kycId, onConfirm, onCancel, loading }) {
   const [reason, setReason] = useState('')
@@ -33,11 +34,14 @@ function RejectDialog({ kycId, onConfirm, onCancel, loading }) {
   )
 }
 
+const PAGE_SIZE = 10
+
 export default function AdminKycQueuePage() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  const [totalItems, setTotalItems] = useState(0)
   const [actionId, setActionId] = useState(null)
   const [rejectingId, setRejectingId] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
@@ -45,19 +49,18 @@ export default function AdminKycQueuePage() {
   const [detail, setDetail] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
 
-  const load = useCallback((p) => {
+  useEffect(() => {
     setLoading(true)
-    getPendingKyc(p, 20)
+    getPendingKyc(page, PAGE_SIZE)
       .then((res) => {
         const d = res.data ?? res
         setItems(d.content ?? d ?? [])
         setTotalPages(d.totalPages ?? 1)
+        setTotalItems(d.totalElements ?? 0)
       })
       .catch(() => toast.error('Failed to load KYC queue'))
       .finally(() => setLoading(false))
-  }, [])
-
-  useEffect(() => { load(page) }, [load, page])
+  }, [page])
 
   async function handleApprove(id) {
     setActionLoading(true)
@@ -204,25 +207,14 @@ export default function AdminKycQueuePage() {
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm">
-          <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="px-4 py-2 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
-          >
-            ← Previous
-          </button>
-          <span className="text-gray-500 dark:text-emerald-400">Page {page + 1} of {totalPages}</span>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            disabled={page >= totalPages - 1}
-            className="px-4 py-2 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-300 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
-          >
-            Next →
-          </button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={PAGE_SIZE}
+        loading={loading}
+        onPage={setPage}
+      />
     </div>
   )
 }
