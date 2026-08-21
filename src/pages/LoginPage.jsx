@@ -176,6 +176,12 @@ export default function LoginPage() {
               Create one free
             </Link>
           </p>
+
+          <p className="text-center text-xs text-gray-400 dark:text-emerald-600 mt-3">
+            <Link to={ROUTES.adminLogin} className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+              Admin sign in →
+            </Link>
+          </p>
         </div>
       </div>
     </div>
