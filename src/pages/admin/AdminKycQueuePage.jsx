@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import toast from 'react-hot-toast'
-import { getPendingKyc, approveKyc, rejectKyc } from '../../api/adminApi'
+import { getPendingKyc, approveKyc, rejectKyc, getPendingKycById } from '../../api/adminApi'
 import { formatDate } from '../../utils/format'
 import Card from '../../components/common/Card'
 import Button from '../../components/common/Button'
@@ -41,6 +41,9 @@ export default function AdminKycQueuePage() {
   const [actionId, setActionId] = useState(null)
   const [rejectingId, setRejectingId] = useState(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const [detailId, setDetailId] = useState(null)
+  const [detail, setDetail] = useState(null)
+  const [detailLoading, setDetailLoading] = useState(false)
 
   const load = useCallback((p) => {
     setLoading(true)
@@ -68,6 +71,22 @@ export default function AdminKycQueuePage() {
     } finally {
       setActionLoading(false)
       setActionId(null)
+    }
+  }
+
+  async function handleViewDetail(accountId, itemId) {
+    if (detailId === itemId) { setDetailId(null); setDetail(null); return }
+    setDetailId(itemId)
+    setDetail(null)
+    setDetailLoading(true)
+    try {
+      const res = await getPendingKycById(accountId)
+      setDetail(res.data ?? res)
+    } catch {
+      toast.error('Failed to load KYC details')
+      setDetailId(null)
+    } finally {
+      setDetailLoading(false)
     }
   }
 
@@ -130,6 +149,12 @@ export default function AdminKycQueuePage() {
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button
+                    onClick={() => handleViewDetail(item.accountId ?? item.customerId, item.id)}
+                    className="px-3 py-1.5 border border-gray-200 dark:border-emerald-700 text-gray-600 dark:text-emerald-400 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-emerald-900 transition-colors"
+                  >
+                    {detailId === item.id ? 'Hide' : 'Details'}
+                  </button>
+                  <button
                     onClick={() => handleApprove(item.id)}
                     disabled={actionLoading && actionId === item.id}
                     className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
@@ -144,6 +169,28 @@ export default function AdminKycQueuePage() {
                   </button>
                 </div>
               </div>
+              {detailId === item.id && (
+                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-emerald-800 text-sm">
+                  {detailLoading ? (
+                    <div className="h-16 bg-gray-100 dark:bg-emerald-800 rounded animate-pulse" />
+                  ) : detail ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        ['Document Type', detail.documentType],
+                        ['Status', detail.kycStatus ?? detail.status],
+                        ['Submitted', detail.submittedAt ? formatDate(detail.submittedAt) : null],
+                        ['Customer', detail.customerName ?? detail.fullName],
+                        ['Account ID', detail.accountId ?? detail.customerId],
+                      ].filter(([, v]) => v).map(([label, value]) => (
+                        <div key={label}>
+                          <p className="text-xs text-gray-400 dark:text-emerald-500 mb-0.5">{label}</p>
+                          <p className="text-gray-900 dark:text-white font-medium">{value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              )}
               {rejectingId === item.id && (
                 <RejectDialog
                   kycId={item.id}
