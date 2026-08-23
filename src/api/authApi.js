@@ -26,12 +26,12 @@ export const forgotPasswordAdmin = (adminId, payload) =>
   client.patch(ENDPOINTS.forgotPasswordAdmin(adminId), payload).then((r) => r.data)
 
 // POST /api/auth/verify-otp — {customerId, otp}
-export const verifyOtp = (customerId, otp) =>
-  client.post(ENDPOINTS.verifyOtp, { customerId, otp }).then((r) => r.data)
+export const verifyOtp = (accountNumber, otp) =>
+  client.post(ENDPOINTS.verifyOtp, { accountNumber, otp }).then((r) => r.data)
 
-// POST /api/auth/resend-otp — {customerId}
-export const resendOtp = (customerId) =>
-  client.post(ENDPOINTS.resendOtp, { customerId }).then((r) => r.data)
+export const resendOtp = (accountNumber) =>
+  client.post(ENDPOINTS.resendOtp, { accountNumber }).then((r) => r.data)
+
 
 // PATCH /api/account/password-reset — {newPassword, confirmPassword} (authenticated)
 export const resetPassword = (newPassword, confirmPassword) =>

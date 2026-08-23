@@ -5,7 +5,7 @@ import { useLogout } from '../hooks/useLogout'
 const links = [
   { to: ROUTES.dashboard, label: 'Dashboard',   icon: '▦' },
   { to: ROUTES.profile,   label: 'Profile',     icon: '👤' },
-  { to: ROUTES.history,   label: 'History',     icon: '☰' },
+  { to: ROUTES.history,   label: 'Transaction History',     icon: '☰' },
   { to: ROUTES.transfer,  label: 'Transfer',    icon: '⇄' },
   { to: ROUTES.deposit,   label: 'Deposit',     icon: '↓' },
   { to: ROUTES.requery,   label: 'Re-query',    icon: '↻' },

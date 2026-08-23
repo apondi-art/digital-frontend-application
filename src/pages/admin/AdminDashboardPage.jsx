@@ -92,6 +92,12 @@ export default function AdminDashboardPage() {
           loading={loading}
           to={`${c}?tier=TIER_2`}
         />
+        <StatCard
+          label="Tier 3 Accounts"
+          value={stats?.totalTier3Account}
+          loading={loading}
+          to={`${c}?tier=TIER_3`}
+        />
       </div>
     </div>
   )

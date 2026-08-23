@@ -21,7 +21,6 @@ function HeroPanel() {
       />
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/85 via-emerald-900/75 to-emerald-800/65" aria-hidden="true" />
 
-      {/* Logo */}
       <div className="relative z-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-emerald-400 flex items-center justify-center text-emerald-900 font-black text-sm">DB</div>
@@ -29,16 +28,12 @@ function HeroPanel() {
         </div>
       </div>
 
-      {/* Central content */}
       <div className="relative z-10 flex flex-col gap-6">
-        {/* Phone illustration */}
         <svg viewBox="0 0 120 180" className="w-24" aria-hidden="true">
           <rect x="10" y="5" width="100" height="170" rx="14" fill="#065f46" stroke="#34d399" strokeWidth="2.5" />
           <rect x="20" y="20" width="80" height="120" rx="4" fill="#047857" opacity="0.6" />
-          {/* Message bubbles */}
           <rect x="25" y="30" width="55" height="18" rx="6" fill="#34d399" opacity="0.8" />
           <rect x="25" y="54" width="40" height="18" rx="6" fill="#6ee7b7" opacity="0.5" />
-          {/* OTP digits illustration */}
           <rect x="22" y="82" width="14" height="18" rx="3" fill="#34d399" />
           <rect x="40" y="82" width="14" height="18" rx="3" fill="#34d399" />
           <rect x="58" y="82" width="14" height="18" rx="3" fill="#34d399" />
@@ -89,7 +84,7 @@ export default function VerifyOtpPage() {
 
   const location = useLocation()
   const navigate = useNavigate()
-  const customerId = location.state?.customerId ?? null
+  const accountNumber = location.state?.accountNumber ?? null
   const email = location.state?.email ?? null
 
   useEffect(() => {
@@ -130,7 +125,7 @@ export default function VerifyOtpPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    if (!customerId) {
+    if (!accountNumber) {
       toast.error('Session expired. Please register again.')
       navigate(ROUTES.register, { replace: true })
       return
@@ -142,7 +137,7 @@ export default function VerifyOtpPage() {
     }
     setLoading(true)
     try {
-      await verifyOtp(customerId, code)
+      await verifyOtp(accountNumber, code)
       setVerified(true)
     } catch {
       // Axios interceptor shows error toast
@@ -152,16 +147,16 @@ export default function VerifyOtpPage() {
   }
 
   async function handleResend() {
-    if (!customerId) {
+    if (!accountNumber) {
       // Already registered but no session — sending them to login triggers the
-      // 403 "not verified" redirect which brings them back here with customerId
+      // 403 "not verified" redirect which brings them back here with accountNumber
       toast('Try logging in — we\'ll bring you right back here.', { icon: 'ℹ️' })
       navigate(ROUTES.login, { replace: true })
       return
     }
     setResendLoading(true)
     try {
-      await resendOtp(customerId)
+      await resendOtp(accountNumber)
       toast.success('A new OTP has been sent.')
       setCountdown(RESEND_COOLDOWN)
       setExpiresIn(OTP_EXPIRY_SECONDS)
@@ -207,7 +202,6 @@ export default function VerifyOtpPage() {
     <div className="min-h-screen grid lg:grid-cols-2">
       <HeroPanel />
 
-      {/* Right — form */}
       <div className="relative flex items-center justify-center px-6 py-16 bg-white dark:bg-emerald-950">
         <div className="absolute top-4 right-4 flex items-center gap-2">
           <Link to={ROUTES.home} className="text-xs text-gray-500 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-white transition-colors px-2 py-1">
@@ -217,7 +211,6 @@ export default function VerifyOtpPage() {
         </div>
 
         <div className="w-full max-w-sm">
-          {/* Logo — mobile only */}
           <div className="flex items-center gap-3 mb-10 lg:hidden">
             <div className="w-9 h-9 bg-emerald-400 flex items-center justify-center text-emerald-900 font-black text-sm">DB</div>
             <span className="text-gray-900 dark:text-white font-bold text-lg">DigitalBank</span>
@@ -246,8 +239,7 @@ export default function VerifyOtpPage() {
             <div className="mb-8" />
           )}
 
-          {!customerId ? (
-            /* No session — user is already registered but landed here without state */
+          {!accountNumber ? (
             <div className="flex flex-col gap-4">
               <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-4 text-sm text-amber-800 dark:text-amber-300">
                 <p className="font-semibold mb-1">Session not found</p>
@@ -267,7 +259,6 @@ export default function VerifyOtpPage() {
           ) : (
             <>
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                {/* OTP digit inputs */}
                 <div className="flex gap-3">
                   {otp.map((digit, i) => (
                     <input
