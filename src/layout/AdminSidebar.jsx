@@ -8,7 +8,7 @@ const links = [
   { to: ROUTES.adminKycQueue,     label: 'KYC Queue',      icon: '🪪' },
   { to: ROUTES.adminTransactions, label: 'Transactions',   icon: '⇄' },
   { to: ROUTES.adminAuditLogs,    label: 'Audit Logs',     icon: '📋' },
-  { to: ROUTES.adminCreateAdmin,  label: 'Add Admin',      icon: '➕' },
+  // { to: ROUTES.adminCreateAdmin,  label: 'Add Admin',      icon: '➕' },
 ]
 
 export default function AdminSidebar() {

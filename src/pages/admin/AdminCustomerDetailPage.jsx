@@ -77,7 +77,7 @@ export default function AdminCustomerDetailPage() {
     }
     setActionLoading(true)
     try {
-      await suspendCustomer(customer.accountDto?.id, suspendReason)
+      await suspendCustomer(customer.accountDto?.accountNumber, suspendReason)
       toast.success('Account suspended')
       setCustomer((c) => ({ ...c, accountDto: { ...c.accountDto, accountStatus: 'FROZEN' } }))
       setShowSuspendForm(false)
@@ -92,7 +92,7 @@ export default function AdminCustomerDetailPage() {
   async function handleReactivate() {
     setActionLoading(true)
     try {
-      await reactivateCustomer(customer.accountDto?.id)
+      await reactivateCustomer(customer.accountDto?.accountNumber)
       toast.success('Account reactivated')
       setCustomer((c) => ({ ...c, accountDto: { ...c.accountDto, accountStatus: 'ACTIVE' } }))
     } catch {

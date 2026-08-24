@@ -25,13 +25,13 @@ export const approveKyc = (kycId) =>
 export const rejectKyc = (kycId, reason) =>
   client.patch(ENDPOINTS.adminKycReject, { kycId, reason }).then((r) => r.data)
 
-// PATCH /api/admin/suspend-account — {accountId, suspensionReason}
-export const suspendCustomer = (accountId, suspensionReason) =>
-  client.patch(ENDPOINTS.adminSuspend, { accountId, suspensionReason }).then((r) => r.data)
+// PATCH /api/admin/suspend-account — {accountNumber, suspensionReason}
+export const suspendCustomer = (accountNumber, suspensionReason) =>
+  client.patch(ENDPOINTS.adminSuspend, { accountNumber, suspensionReason }).then((r) => r.data)
 
-// PATCH /api/admin/reactivate-account/{accountId}
-export const reactivateCustomer = (accountId) =>
-  client.patch(ENDPOINTS.adminReactivate(accountId)).then((r) => r.data)
+// PATCH /api/admin/reactivate-account/{accountNumber}
+export const reactivateCustomer = (accountNumber) =>
+  client.patch(ENDPOINTS.adminReactivate(accountNumber)).then((r) => r.data)
 
 // GET /api/admin/customers?page=&size=
 // search param is disabled until the backend supports it
@@ -49,6 +49,9 @@ export const getCustomerTransactions = (accountNumber) =>
 // GET /api/admin/transaction/{txId}
 export const getTransactionById = (txId) =>
   client.get(ENDPOINTS.adminTransactionById(txId)).then((r) => r.data)
+
+export const getAllTransactions = (page = 0, size = 20) =>
+  client.get(ENDPOINTS.adminAllTransactions, { params: { page, size } }).then((r) => r.data)
 
 // GET /api/admin/stats — {totalAccount, totalActiveAccount, totalDormantAccount, totalSuspendedAccount, totalTier1/2/3Account}
 export const getStats = () =>
