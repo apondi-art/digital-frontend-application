@@ -95,7 +95,6 @@ export default function AdminKycQueuePage() {
   }
 
   async function handleViewDetail(accountId, itemId) {
-    console.log(accountId);
     if (detailId === itemId) {
       setDetailId(null);
       setDetail(null);
@@ -165,7 +164,6 @@ export default function AdminKycQueuePage() {
         <div className='space-y-4'>
           {items.map((item) => {
             const kycId = getKycId(item);
-            console.log(item);
             return (
               <Card key={kycId ?? item.customerId ?? item.accountId}>
                 <div className='flex items-start justify-between gap-4'>
